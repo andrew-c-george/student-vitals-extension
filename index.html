@@ -103,6 +103,7 @@
   <span class="spacer"></span>
 </div>
 <div class="wrap">
+  <div id="dbg"></div>
   <div class="tabs">
     <div class="tab active" data-page="student">Student Vitals</div>
     <div class="tab" data-page="leader">Leader Vitals</div>
@@ -355,26 +356,79 @@ const WORKSHEET_MAP={
   aim3:      {sheet:"SM_AIM3ByCampus",       campus:"CampusName", value:"Pct 18-29"}
   // funnel, detail, attendance-trend, retention triangle/curve: read from their own sheets the same way.
 };
-async function readSheet(name){
-  const ws=tableau.extensions.dashboardContent.dashboard.worksheets.find(w=>w.name===name);
-  if(!ws) throw new Error("worksheet not found: "+name);
-  const dt=await ws.getSummaryDataAsync({maxRows:5000});
-  const cols=dt.columns.map(c=>c.fieldName);
-  return dt.data.map(r=>{const o={};cols.forEach((c,i)=>o[c]=r[i].formattedValue);return o;});
+/* ---- tolerant campus matching ---------------------------------------
+   Live rows may come back as full names ("Bullitt County"), short names
+   ("Bullitt Co."), or with extra words/spacing. Normalize to a slug and
+   map both the FULL and SHORT spellings (and a few partials) to the same
+   slot so order never depends on an exact string. ------------------- */
+const norm=s=>String(s==null?"":s).toLowerCase().replace(/[^a-z0-9]/g,"");
+const CAMPUS_IDX={};
+FULL.forEach((f,i)=>{CAMPUS_IDX[norm(f)]=i;});
+SHORT.forEach((s,i)=>{CAMPUS_IDX[norm(s)]=i;});
+function campusIndex(raw){
+  const n=norm(raw);
+  if(n==="") return -1;
+  if(n in CAMPUS_IDX) return CAMPUS_IDX[n];
+  for(const k in CAMPUS_IDX){ if(n.startsWith(k)||k.startsWith(n)) return CAMPUS_IDX[k]; }
+  return -1;
+}
+function findSheet(name){
+  const ws=tableau.extensions.dashboardContent.dashboard.worksheets;
+  return ws.find(w=>w.name===name) || ws.find(w=>norm(w.name)===norm(name)) || null;
 }
 async function loadLive(){
-  // Template: wire the five campus-bar metrics; extend to the rest the same way.
-  const model=JSON.parse(JSON.stringify(SAMPLE));            // start from sample, overwrite what we read
-  const order=FULL;                                          // match live rows by full campus name
+  const model=JSON.parse(JSON.stringify(SAMPLE));   // start from sample, overwrite what we read
+  const dbg=[];
   for(const key of ["attendance","baptism","serving","ratio","aim3"]){
+    const m=WORKSHEET_MAP[key];
     try{
-      const m=WORKSHEET_MAP[key], rows=await readSheet(m.sheet);
-      const byCampus={}; rows.forEach(r=>byCampus[r[m.campus]]=parseFloat(String(r[m.value]).replace(/[^0-9.\-]/g,"")));
-      model[key].vals=order.map(c=>byCampus[c]??0);
-    }catch(e){console.warn("live read skipped for",key,e.message);}  // falls back to sample for that metric
+      const ws=findSheet(m.sheet);
+      if(!ws){ dbg.push({key,sheet:m.sheet,err:"sheet not on this dashboard"}); continue; }
+      const dt=await ws.getSummaryDataAsync({maxRows:5000});
+      const cols=dt.columns.map(c=>({name:c.fieldName,type:c.dataType}));
+      let ci=cols.findIndex(c=>norm(c.name)===norm(m.campus));
+      if(ci<0) ci=cols.findIndex(c=>c.type==="string");
+      let vi=cols.findIndex(c=>norm(c.name)===norm(m.value));
+      if(vi<0) vi=cols.findIndex(c=>c.type==="float"||c.type==="int"||c.type==="integer");
+      const vals=model[key].vals.slice();
+      const seen=[]; let matched=0;
+      dt.data.forEach(r=>{
+        const craw=ci>=0 ? r[ci].formattedValue : "";
+        const vraw=vi>=0 ? r[vi].formattedValue : "";
+        const idx=campusIndex(craw);
+        const num=parseFloat(String(vraw).replace(/[^0-9.\-]/g,""));
+        seen.push(craw+" = "+vraw+(idx<0?"  [no match]":""));
+        if(idx>=0 && isFinite(num)){ vals[idx]=num; matched++; }
+      });
+      model[key].vals=vals;
+      dbg.push({key,sheet:m.sheet,rows:dt.data.length,matched,
+        campusCol:ci>=0?cols[ci].name:"(none)", valueCol:vi>=0?cols[vi].name:"(none)",
+        cols:cols.map(c=>c.name+":"+c.type).join(", "), seen});
+    }catch(e){ dbg.push({key,sheet:m.sheet,err:e.message}); }
   }
   renderAll(model);
-  const _pill=document.getElementById("dataPill"); if(_pill){_pill.textContent="LIVE";_pill.style.color="#8fe3b4";}
+  renderDebug(dbg);
+}
+function renderDebug(dbg){
+  const box=document.getElementById("dbg"); if(!box) return;
+  const bad=dbg.some(d=>d.err || d.matched===0);
+  const rows=dbg.map(d=>{
+    if(d.err) return `<div style="color:#b23b3b"><b>${d.sheet}</b> — ERROR: ${d.err}</div>`;
+    const ok=d.matched>0;
+    return `<div style="margin:6px 0">
+      <div><b>${d.sheet}</b> — ${d.rows} rows, <span style="color:${ok?'#1b7f4f':'#b23b3b'}">${d.matched} matched</span>
+       | campus col: <code>${d.campusCol}</code> | value col: <code>${d.valueCol}</code></div>
+      <div style="color:#52514e;font-size:10.5px">columns: ${d.cols}</div>
+      <div style="color:#52514e;font-size:10.5px">${d.seen.slice(0,14).join(" &nbsp;·&nbsp; ")}</div>
+    </div>`;
+  }).join("");
+  box.innerHTML=
+    `<details ${bad?"open":""} style="background:${bad?'#fff4ec':'#eef7f1'};border:1px solid ${bad?'#eb6834':'#1baf7a'};
+       border-radius:8px;padding:8px 12px;margin:12px 0;font-size:11.5px">
+      <summary style="cursor:pointer;font-weight:700;color:${bad?'#b23b3b':'#1b7f4f'}">
+        DATA CHECK — ${bad?'some sheets not matching, tap to see detail (screenshot this)':'all five sheets reading live'}</summary>
+      <div style="margin-top:8px">${rows}</div>
+    </details>`;
 }
 async function init(){
   if(window.tableau && tableau.extensions){
