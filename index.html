@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Student Vitals Extension</title>
+<!-- Tableau Extensions API. Hosted by Tableau; safe to load from this CDN. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tableau-extensions-api/1.12.0/tableau.extensions.1.latest.min.js"></script>
+<style>
+  :root{
+    --ink:#0b0b0b; --sec:#52514e; --muted:#898781; --surf:#ffffff; --panel:#f7f7f4;
+    --grid:#e1e0d9; --base:#c3c2b7; --header:#1f2a37; --blue:#2a78d6;
+    --ahead:#1baf7a; --behind:#eb6834; --good:#006300; --goal:#1f2a37;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--surf);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 16px 32px}
+  /* header */
+  .topbar{background:var(--header);color:#fff;display:flex;align-items:center;gap:14px;
+    padding:14px 16px;border-radius:0 0 4px 4px}
+  .topbar h1{font-size:22px;margin:0;font-weight:800}
+  .topbar .sub{color:#c9d2dd;font-size:13px}
+  .topbar .spacer{flex:1}
+  .pill{background:#3b4859;color:#ffd27a;font-size:10px;font-weight:700;letter-spacing:.3px;
+    padding:4px 9px;border-radius:9px;border:1px solid #55606f}
+  /* tabs */
+  .tabs{display:flex;gap:6px;margin:14px 0 8px}
+  .tab{padding:7px 16px;border-radius:8px;border:1px solid var(--grid);background:var(--panel);
+    color:var(--sec);font-weight:600;cursor:pointer;font-size:13px}
+  .tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+  /* filter row */
+  .filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
+  .flabel{font-size:9px;color:var(--muted);font-weight:700;letter-spacing:.4px;margin-right:2px}
+  .chip{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--grid);
+    border-radius:8px;padding:6px 11px;font-size:12.5px;color:var(--sec)}
+  .chip.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .chip b{color:inherit}
+  .legend{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:12px;color:var(--sec)}
+  .legend .k{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  /* section */
+  .scard-head{font-size:11px;font-weight:700;color:var(--ink);margin:16px 0 8px}
+  .section{margin-top:22px}
+  .section .snum{color:var(--blue);font-weight:800;font-size:15px;margin-right:8px}
+  .section .stitle{font-weight:800;font-size:15px}
+  .section hr{border:none;border-top:1px solid var(--grid);margin:6px 0 0}
+  .take{color:var(--sec);font-size:13px;margin-top:7px}
+  /* scorecards */
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .cards.three{grid-template-columns:repeat(3,1fr)}
+  .card{position:relative;background:var(--panel);border:1px solid var(--grid);border-radius:10px;
+    padding:12px 14px 12px 18px;overflow:hidden}
+  .card .accent{position:absolute;left:0;top:0;bottom:0;width:5px}
+  .card .lab{font-size:10.5px;color:var(--sec)}
+  .card .val{font-size:30px;font-weight:800;line-height:1.1;margin:6px 0 4px}
+  .card .foot{display:flex;justify-content:space-between;align-items:center;font-size:11px}
+  .card .delta{font-weight:700}
+  .card .ref{color:var(--muted);font-size:10px}
+  /* panels & charts */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:4px}
+  .panel-t{font-weight:700;font-size:13px;margin:6px 0 1px}
+  .panel-s{color:var(--muted);font-size:11px;margin-bottom:10px}
+  .bars{display:flex;flex-direction:column;gap:5px}
+  .bar{display:grid;grid-template-columns:96px 1fr auto;align-items:center;gap:8px;font-size:12px}
+  .bar .nm{color:var(--sec);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .track{position:relative;height:17px;background:#fff;border-bottom:1px solid var(--grid)}
+  .fill{height:17px;border-radius:0 2px 2px 0}
+  .refline{position:absolute;top:-3px;bottom:-3px;border-left:2px dashed var(--goal)}
+  .reftag{position:absolute;top:-16px;transform:translateX(-50%);font-size:9.5px;font-weight:700;color:var(--goal);white-space:nowrap}
+  .bar .vv{font-weight:700;font-size:12px;white-space:nowrap}
+  /* funnel */
+  .funnel .fbar{display:grid;grid-template-columns:120px 1fr auto;align-items:center;gap:8px;margin:7px 0}
+  .funnel .fnm{color:var(--sec);text-align:right;font-size:12.5px}
+  .funnel .ftrack{height:26px}
+  .funnel .ffill{height:26px;border-radius:0 3px 3px 0}
+  .funnel .fv{font-weight:800;font-size:14px}
+  .hold{font-size:10.5px;color:var(--muted);margin:-3px 0 0 128px}
+  /* detail table */
+  table.detail{width:100%;border-collapse:collapse;font-size:12px}
+  table.detail th{text-align:left;color:var(--sec);font-weight:700;font-size:11px;padding:4px 6px;border-bottom:1px solid var(--grid)}
+  table.detail td{padding:5px 6px;color:var(--sec)}
+  table.detail td.nm{color:var(--ink);font-weight:700}
+  table.detail tr:nth-child(even){background:var(--panel)}
+  /* triangle */
+  table.tri{border-collapse:separate;border-spacing:2px;font-size:11px}
+  table.tri th{font-size:10px;color:var(--sec);font-weight:600;padding:2px 4px;text-align:center}
+  table.tri td.coh{text-align:left;font-weight:700;color:var(--ink);white-space:nowrap;padding-right:6px}
+  table.tri td.n{color:var(--sec);text-align:right;padding-right:6px}
+  table.tri td.cell{width:46px;height:30px;text-align:center;color:#fff;font-weight:700;border-radius:3px}
+  /* svg line */
+  svg.line{width:100%;height:150px;display:block}
+  .foot-note{color:var(--muted);font-size:11px;font-style:italic;margin-top:20px}
+  .toggle{display:inline-flex;border:1px solid var(--grid);border-radius:7px;overflow:hidden;font-size:11.5px}
+  .toggle button{border:none;background:var(--panel);color:var(--sec);padding:4px 10px;cursor:pointer;font-weight:600}
+  .toggle button.on{background:var(--blue);color:#fff}
+  @media (max-width:820px){.cards,.cards.three{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1 id="pageTitle">Student Vitals</h1>
+  <span class="sub">Student Ministry  |  leadership scorecard</span>
+  <span class="spacer"></span>
+</div>
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" data-page="student">Student Vitals</div>
+    <div class="tab" data-page="leader">Leader Vitals</div>
+  </div>
+  <div class="filters">
+    <span class="flabel">FILTERS</span>
+    <span class="chip active"><b>Campus</b> All ▾</span>
+    <span class="chip"><b>Date range</b> <span id="daterange">Last 52 weeks</span> ▾</span>
+    <span class="chip"><b>Area</b> HSM + MSM ▾</span>
+    <span class="legend"><span>Bar color vs church average:</span>
+      <span><span class="k" style="background:var(--ahead)"></span>Ahead</span>
+      <span><span class="k" style="background:var(--behind)"></span>Behind</span></span>
+  </div>
+  <div id="student"></div>
+  <div id="leader" style="display:none"></div>
+  <div class="foot-note" id="footnote">Summer (Jun–Jul) is excluded on attendance and ratio because student groups are on break; including it would understate the in-session average.</div>
+</div>
+
+<script>
+/* ============================================================
+   SAMPLE DATA  (mirrors the approved mockup; replaced by live
+   worksheet data when running inside Tableau — see loadLive()).
+   ============================================================ */
+const SHORT=["Blankenbaker","Bullitt Co.","Crestwood","Indiana","E-town","La Grange",
+  "Nelson Co.","Shelby Co.","Southwest","Prospect","S. Louisville","Franklin"];
+// full campus names as they come from the views (used to match live worksheet rows)
+const FULL=["Blankenbaker","Bullitt County","Crestwood","Indiana","Elizabethtown","La Grange",
+  "Nelson County","Shelby County","Southwest","Prospect","South Louisville","Franklin"];
+const SAMPLE={
+  cards_student:[
+    {lab:"NEW STUDENTS CONNECTED",val:"28%",delta:"+4 pts",good:true,ref:"vs church avg"},
+    {lab:"STUDENTS, % OF TOTAL ATTENDANCE",val:"5.3%",delta:"+0.4 pts",good:true,ref:"goal 8%"},
+    {lab:"BAPTIZED 11-18, NOT IN A GROUP",val:"54%",delta:"-4 pts",good:true,ref:"lower is better"},
+    {lab:"STUDENTS SERVING",val:"18%",delta:"+2 pts",good:true,ref:""}],
+  funnel:[{s:"1st check-in",v:540},{s:"2nd check-in",v:330},{s:"3rd check-in",v:210},{s:"Connected (4+)",v:150}],
+  detail:[["Mia R.","Blankenbaker","8","Oct 5, 2026","25"],["Caleb T.","Bullitt Co.","10","Sep 28, 2026","32"],
+    ["Ava L.","Crestwood","7","Sep 14, 2026","46"],["Noah P.","Indiana","9","Aug 31, 2026","60"],
+    ["Ella M.","E-town","11","Oct 12, 2026","18"],["Liam K.","Southwest","8","Jul 20, 2026","102"],
+    ["Zoe B.","La Grange","12","Sep 7, 2026","53"]],
+  attendance:{vals:[5.4,9.8,6.5,4.2,4.6,5.2,3.8,4.3,5.3,3.5,5.6,4.4],avg:5.3,goal:8,
+    trend:[4.3,5.1,5.6,5.4,4.9,5.0,5.7,5.9,5.3,4.8],readout:"5.3%  =  312 students / 5,920 total"},
+  baptism:{vals:[50.7,37.5,39.1,50.7,55.9,59.6,73.0,61.6,51.1,45.8,100,37.5],avg:54,
+    ann:["170/335","42/112","34/87","35/69","38/68","28/47","73/100","53/86","23/45","22/48","4/4","3/8"]},
+  serving:{vals:[22,18,20,16,19,17,14,15,21,13,24,12],avg:18,goal:50},
+  cards_leader:[
+    {lab:"LEADER RETENTION (current trimester)",val:"73%",delta:"+2 pts",good:true,ref:"vs church avg"},
+    {lab:"STUDENTS PER LEADER (avg week)",val:"6.6 : 1",delta:"-0.3",good:true,ref:"goal 5:1"},
+    {lab:"LEADERS AGED 18-29 (AIM3)",val:"20%",delta:"+3 pts",good:true,ref:""}],
+  triangle:{cohorts:["2024 - T3","2025 - T1","2025 - T2","2025 - T3","2026 - T1","2026 - T2","2026 - T3"],
+    counts:[31,40,86,25,30,98,24],cols:["24-T3","25-T1","25-T2","25-T3","26-T1","26-T2","26-T3"],
+    M:[[100,81,52,42,42,39,29],[null,100,73,58,58,50,43],[null,null,100,95,85,77,53],
+       [null,null,null,100,76,64,44],[null,null,null,null,100,80,60],[null,null,null,null,null,100,88],
+       [null,null,null,null,null,null,100]]},
+  survival:{x:["start","+1","+2","+3","+4"],
+    series:[{nm:"Blankenbaker",v:[100,88,81,79,78]},{nm:"S. Louisville",v:[100,86,80,78,77]},
+      {nm:"Prospect",v:[100,74,66,62,60]},{nm:"Nelson Co.",v:[100,76,68,64,62]}]},
+  retComp:{vals:[58,51,54,46,52,49,44,50,55,42,56,47],avg:52},
+  ratio:{vals:[5.1,11.3,7.5,8.2,6.4,5.8,9.1,7.0,6.2,4.5,5.0,6.8],avg:6.6,goal:5},
+  aim3:{vals:[24,18,21,15,19,22,16,17,20,14,27,18],avg:20,
+    ann:["100/417","22/122","28/133","15/100","16/84","19/86","11/69","13/76","24/120","9/64","8/30","5/28"]}
+};
+
+/* ---------- helpers ---------- */
+const AHEAD="#1baf7a",BEHIND="#eb6834";
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+function section(num,title,take){
+  const s=el("div","section");
+  s.innerHTML=`<div><span class="snum">${num}</span><span class="stitle">${title}</span></div><hr>`+
+    (take?`<div class="take">${take}</div>`:"");
+  return s;
+}
+function cards(list,three){
+  const g=el("div","cards"+(three?" three":""));
+  list.forEach(c=>{
+    const col=c.good?AHEAD:BEHIND, dc=c.good?"var(--good)":BEHIND, ar=c.delta.trim().startsWith("-")?"▼":"▲";
+    g.appendChild(el("div","card",
+      `<div class="accent" style="background:${col}"></div>
+       <div class="lab">${c.lab}</div><div class="val">${c.val}</div>
+       <div class="foot"><span class="delta" style="color:${dc}">${ar} ${c.delta}</span>
+       <span class="ref">${c.ref}</span></div>`));
+  });
+  return g;
+}
+// ranked horizontal bars; color vs avg (higherBetter), dashed reference at lineRef
+function rankedBars(data,labels,higherBetter,avg,lineRef,lineLabel,fmt,ann){
+  const idx=data.map((v,i)=>i).sort((a,b)=>data[b]-data[a]);
+  const max=Math.max(...data,lineRef)*1.14;
+  const wrap=el("div","bars");
+  idx.forEach(i=>{
+    const v=data[i], good=higherBetter?(v>=avg):(v<=avg), col=good?AHEAD:BEHIND;
+    const w=(v/max*100).toFixed(1), rp=(lineRef/max*100).toFixed(1);
+    const row=el("div","bar",
+      `<div class="nm">${labels[i]}</div>
+       <div class="track"><div class="fill" style="width:${w}%;background:${col}"></div>
+         <div class="refline" style="left:${rp}%"></div></div>
+       <div class="vv">${fmt(v)}${ann?`  <span style="color:var(--muted);font-weight:600">(${ann[i]})</span>`:""}</div>`);
+    wrap.appendChild(row);
+  });
+  // reference tag on the first row's track
+  const firstTrack=wrap.querySelector(".track");
+  if(firstTrack){const t=el("div","reftag",lineLabel);t.style.left=(lineRef/max*100)+"%";firstTrack.appendChild(t);}
+  return wrap;
+}
+function funnel(f){
+  const wrap=el("div","funnel");const max=f[0].v;
+  const ramp=["#86b6ef","#5598e7","#2a78d6"];
+  f.forEach((d,i)=>{
+    const col=i===f.length-1?AHEAD:ramp[i];
+    wrap.appendChild(el("div","fbar",
+      `<div class="fnm">${d.s}</div>
+       <div class="ftrack"><div class="ffill" style="width:${(d.v/max*100).toFixed(1)}%;background:${col}"></div></div>
+       <div class="fv">${d.v}${i===f.length-1?" ✓":""}</div>`));
+    if(i>0){const pct=Math.round(d.v/f[i-1].v*100);wrap.appendChild(el("div","hold",`${pct}% hold →`));}
+  });
+  return wrap;
+}
+function detailTable(rows){
+  const t=el("table","detail");
+  t.innerHTML="<tr><th>Student</th><th>Campus</th><th>Grade</th><th>2nd (last) visit</th><th>Days since</th></tr>"+
+    rows.map(r=>`<tr><td class="nm">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join("");
+  return t;
+}
+function lineChart(xs,series,yMax,ref,refLabel){
+  const W=560,H=150,pl=34,pr=70,pt=14,pb=22,gw=W-pl-pr,gh=H-pt-pb;
+  const xf=i=>pl+gw*(i/(xs.length-1)), yf=v=>pt+gh*(1-v/yMax);
+  const colors=["#2a78d6","#1baf7a","#eb6834","#6250d6"];
+  let s=`<svg class="line" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">`;
+  [0,yMax/2,yMax].forEach(g=>{s+=`<line x1="${pl}" x2="${W-pr}" y1="${yf(g)}" y2="${yf(g)}" stroke="#e1e0d9"/>`+
+    `<text x="${pl-5}" y="${yf(g)+3}" font-size="9" fill="#898781" text-anchor="end">${Math.round(g)}%</text>`;});
+  if(ref!=null){s+=`<line x1="${pl}" x2="${W-pr}" y1="${yf(ref)}" y2="${yf(ref)}" stroke="#1f2a37" stroke-dasharray="4 3"/>`+
+    `<text x="${pl+2}" y="${yf(ref)-3}" font-size="9" font-weight="700" fill="#1f2a37">${refLabel}</text>`;}
+  series.forEach((ser,k)=>{
+    const pts=ser.v.map((v,i)=>`${xf(i)},${yf(v)}`).join(" ");
+    s+=`<polyline points="${pts}" fill="none" stroke="${colors[k%4]}" stroke-width="2.2"/>`;
+    s+=`<circle cx="${xf(ser.v.length-1)}" cy="${yf(ser.v[ser.v.length-1])}" r="4" fill="${colors[k%4]}"/>`;
+    s+=`<text x="${xf(ser.v.length-1)+6}" y="${yf(ser.v[ser.v.length-1])+3}" font-size="10" font-weight="700" fill="${colors[k%4]}">${ser.nm?ser.nm:ser.v[ser.v.length-1]+"%"}</text>`;
+  });
+  xs.forEach((x,i)=>{s+=`<text x="${xf(i)}" y="${H-6}" font-size="9" fill="#898781" text-anchor="middle">${x}</text>`;});
+  return s+"</svg>";
+}
+function triangle(tr){
+  const blue=t=>{const a=0.18+0.72*t;return `rgba(${Math.round(42+(13-42)*t)},${Math.round(120+(79-120)*t)},${Math.round(214+(149-214)*t)},1)`;};
+  let s='<table class="tri"><tr><th style="text-align:left">Start trimester</th><th>n</th>'+
+    tr.cols.map(c=>`<th>${c}</th>`).join("")+"</tr>";
+  tr.cohorts.forEach((co,i)=>{
+    s+=`<tr><td class="coh">${co}</td><td class="n">${tr.counts[i]}</td>`;
+    tr.M[i].forEach(v=>{
+      if(v==null){s+=`<td></td>`;}
+      else{const t=v/100;s+=`<td class="cell" style="background:${blue(t)};color:${t>0.5?'#fff':'#0b0b0b'}">${v}%</td>`;}
+    });
+    s+="</tr>";
+  });
+  return s+"</table>";
+}
+
+/* ---------- render pages ---------- */
+function renderStudent(d){
+  const root=document.getElementById("student");root.innerHTML="";
+  root.appendChild(el("div","scard-head","THE SCORECARD — church-wide, selected range vs prior"));
+  root.appendChild(cards(d.cards_student));
+  // 1 funnel + detail
+  root.appendChild(section("1","NEW STUDENT RETENTION FUNNEL",
+    "Click a step to pull the students in it. Biggest drop-off is 1st → 2nd. 150 of 540 reached connected."));
+  const g1=el("div","grid2");
+  const c1=el("div");c1.innerHTML=`<div class="panel-t">New-student funnel (1st → connected)</div><div class="panel-s">Step = distinct student-group check-ins, capped at 4+.</div>`;
+  c1.appendChild(funnel(d.funnel));g1.appendChild(c1);
+  const c2=el("div");c2.innerHTML=`<div class="panel-t">Students at 2nd check-in (330)</div><div class="panel-s">Name → opens Rock profile.</div>`;
+  c2.appendChild(detailTable(d.detail));g1.appendChild(c2);
+  root.appendChild(g1);
+  // 2 attendance
+  root.appendChild(section("2","STUDENT ATTENDANCE AS % OF TOTAL ATTENDANCE",
+    "Average over the selected range. Student avg ÷ total campus attendance."));
+  const g2=el("div","grid2");
+  const a1=el("div");a1.innerHTML=`<div class="panel-t">Student avg as % of total attendance, by campus</div><div class="panel-s">Date range sets the averaging window. Tooltip shows both numbers.</div>`;
+  a1.appendChild(rankedBars(d.attendance.vals,SHORT,true,d.attendance.avg,d.attendance.goal,"goal 8%",v=>v.toFixed(1)+"%"));
+  g2.appendChild(a1);
+  const a2=el("div");a2.innerHTML=`<div class="panel-t">Church-wide trend (weekly)</div><div class="panel-s">${d.attendance.readout}</div>`+
+    lineChart(["Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May"],[{v:d.attendance.trend}],9.5,d.attendance.goal,"goal 8%");
+  g2.appendChild(a2);root.appendChild(g2);
+  // 3 & 4
+  const g34=el("div","grid2");
+  const b=el("div");b.innerHTML=`<div class="section" style="margin-top:22px"><span class="snum">3</span><span class="stitle">BAPTISMS NOT IN A SMALL GROUP</span><hr><div class="take">54% of baptized 11-18 aren't in an active group.</div></div>
+    <div class="panel-t" style="margin-top:12px">Baptized 11-18, % NOT on an active roster</div>`;
+  b.appendChild(rankedBars(d.baptism.vals,SHORT,false,d.baptism.avg,d.baptism.avg,"avg 54%",v=>Math.round(v)+"%",d.baptism.ann));
+  b.appendChild(el("div",null,`<div style="color:var(--muted);font-size:11px;margin-top:8px">Label: not-connected / total baptized in range.</div>`));
+  g34.appendChild(b);
+  const s=el("div");s.innerHTML=`<div class="section" style="margin-top:22px"><span class="snum">4</span><span class="stitle">STUDENTS SERVING</span><hr><div class="take">18% of attending students serve.</div></div>
+    <div class="panel-t" style="margin-top:12px">Students serving, % of students attending</div>`;
+  s.appendChild(rankedBars(d.serving.vals,SHORT,true,d.serving.avg,d.serving.goal,"goal 50%",v=>Math.round(v)+"%"));
+  g34.appendChild(s);root.appendChild(g34);
+}
+function renderLeader(d){
+  const root=document.getElementById("leader");root.innerHTML="";
+  root.appendChild(el("div","scard-head","THE SCORECARD — church-wide, selected range vs prior"));
+  root.appendChild(cards(d.cards_leader,true));
+  // 5 retention
+  root.appendChild(section("5","LEADER RETENTION",
+    "Cohort = trimester a leader started. Triangle shows how each cohort holds; bars rank campuses a year on."));
+  const g5=el("div","grid2");
+  const t=el("div");
+  t.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center">
+    <div class="panel-t">Leader retention by start group</div>
+    <span class="toggle"><button class="on" id="tgTri">Triangle</button><button id="tgCurve">Survival curve</button></span></div>
+    <div class="panel-s">Each row = leaders who started that trimester; cells = the % of them still serving in each later trimester.</div>
+    <div id="retView"></div>`;
+  g5.appendChild(t);
+  const rc=el("div");rc.innerHTML=`<div class="panel-t">Retained one year on, by campus</div><div class="panel-s">Share of each campus's leaders from a year ago who are still serving now.</div>`;
+  rc.appendChild(rankedBars(d.retComp.vals,SHORT,true,d.retComp.avg,d.retComp.avg,"avg 52%",v=>Math.round(v)+"%"));
+  g5.appendChild(rc);root.appendChild(g5);
+  const retView=t.querySelector("#retView");
+  const showTri=()=>{retView.innerHTML=triangle(d.triangle);};
+  const showCurve=()=>{retView.innerHTML=`<div class="panel-s">% of each school-year cohort still serving, by trimesters since start.</div>`+
+    lineChart(d.survival.x,d.survival.series,100,null,"");};
+  showTri();
+  t.querySelector("#tgTri").onclick=()=>{t.querySelector("#tgTri").classList.add("on");t.querySelector("#tgCurve").classList.remove("on");showTri();};
+  t.querySelector("#tgCurve").onclick=()=>{t.querySelector("#tgCurve").classList.add("on");t.querySelector("#tgTri").classList.remove("on");showCurve();};
+  // 6 & 7
+  const g67=el("div","grid2");
+  const r=el("div");r.innerHTML=`<div class="section" style="margin-top:22px"><span class="snum">6</span><span class="stitle">STUDENT-TO-LEADER RATIO</span><hr><div class="take">Average week: students ÷ leaders checked in. Goal 5:1.</div></div>
+    <div class="panel-t" style="margin-top:12px">Students per leader, average week</div><div class="panel-s">Avg weekly students ÷ avg weekly leaders over the range.</div>`;
+  r.appendChild(rankedBars(d.ratio.vals,SHORT,false,d.ratio.avg,d.ratio.goal,"goal 5:1",v=>v.toFixed(1)+" : 1"));
+  g67.appendChild(r);
+  const a=el("div");a.innerHTML=`<div class="section" style="margin-top:22px"><span class="snum">7</span><span class="stitle">AIM3 — LEADERS AGED 18-29</span><hr><div class="take">20% of leaders are 18-29.</div></div>
+    <div class="panel-t" style="margin-top:12px">Leaders aged 18-29, % of leaders</div><div class="panel-s">Age at check-in 18-29. Label: n of total.</div>`;
+  a.appendChild(rankedBars(d.aim3.vals,SHORT,true,d.aim3.avg,d.aim3.avg,"avg 20%",v=>Math.round(v)+"%",d.aim3.ann));
+  g67.appendChild(a);root.appendChild(g67);
+}
+function renderAll(d){renderStudent(d);renderLeader(d);}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll(".tab").forEach(tb=>tb.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));tb.classList.add("active");
+  const p=tb.dataset.page;
+  document.getElementById("student").style.display=p==="student"?"":"none";
+  document.getElementById("leader").style.display=p==="leader"?"":"none";
+  document.getElementById("pageTitle").textContent=p==="student"?"Student Vitals":"Leader Vitals";
+});
+
+/* ============================================================
+   LIVE DATA BINDING (Tableau Extensions API)
+   Map each metric to a worksheet on the dashboard + its columns.
+   Build one worksheet per metric from the SQL views, then fill
+   this map with the worksheet names and field names.
+   ============================================================ */
+const WORKSHEET_MAP={
+  attendance:{sheet:"SM_AttendanceByCampus", campus:"CampusName", value:"Pct of Total"},
+  baptism:   {sheet:"SM_BaptismByCampus",    campus:"CampusName", value:"Pct Not Connected"},
+  serving:   {sheet:"SM_ServingByCampus",    campus:"CampusName", value:"Pct Serving"},
+  ratio:     {sheet:"SM_RatioByCampus",      campus:"CampusName", value:"Students Per Leader"},
+  aim3:      {sheet:"SM_AIM3ByCampus",       campus:"CampusName", value:"Pct 18-29"}
+  // funnel, detail, attendance-trend, retention triangle/curve: read from their own sheets the same way.
+};
+async function readSheet(name){
+  const ws=tableau.extensions.dashboardContent.dashboard.worksheets.find(w=>w.name===name);
+  if(!ws) throw new Error("worksheet not found: "+name);
+  const dt=await ws.getSummaryDataAsync({maxRows:5000});
+  const cols=dt.columns.map(c=>c.fieldName);
+  return dt.data.map(r=>{const o={};cols.forEach((c,i)=>o[c]=r[i].formattedValue);return o;});
+}
+async function loadLive(){
+  // Template: wire the five campus-bar metrics; extend to the rest the same way.
+  const model=JSON.parse(JSON.stringify(SAMPLE));            // start from sample, overwrite what we read
+  const order=FULL;                                          // match live rows by full campus name
+  for(const key of ["attendance","baptism","serving","ratio","aim3"]){
+    try{
+      const m=WORKSHEET_MAP[key], rows=await readSheet(m.sheet);
+      const byCampus={}; rows.forEach(r=>byCampus[r[m.campus]]=parseFloat(String(r[m.value]).replace(/[^0-9.\-]/g,"")));
+      model[key].vals=order.map(c=>byCampus[c]??0);
+    }catch(e){console.warn("live read skipped for",key,e.message);}  // falls back to sample for that metric
+  }
+  renderAll(model);
+  const _pill=document.getElementById("dataPill"); if(_pill){_pill.textContent="LIVE";_pill.style.color="#8fe3b4";}
+}
+async function init(){
+  if(window.tableau && tableau.extensions){
+    try{ await tableau.extensions.initializeAsync(); await loadLive(); return; }
+    catch(e){ console.warn("Extensions init failed; showing sample.",e); }
+  }
+  renderAll(SAMPLE);   // preview / outside Tableau
+}
+init();
+</script>
+</body>
+</html>
