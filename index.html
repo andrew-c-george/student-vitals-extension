@@ -345,14 +345,19 @@ function weeklyAvg(numKey,denKey){
 // since the campus total is repeated on each area row of the feed).
 function mAttendance(){
   const rows=weeklyRows();
-  const byC={}; const taSeen={}; let N=0,D=0;
+  const cw={};                                   // ci -> w -> {sc, ta}
   rows.forEach(r=>{
-    const o=byC[r.ci]||(byC[r.ci]={n:0,d:0});
-    o.n+=r.sc; N+=r.sc;
-    const key=r.ci+"|"+r.w;
-    if(!taSeen[key]){taSeen[key]=1; o.d+=r.ta; D+=r.ta;}
+    const wk=(cw[r.ci]=cw[r.ci]||{});
+    const o=wk[r.w]||(wk[r.w]={sc:0,ta:0});
+    o.sc+=r.sc;                                   // sum HSM+MSM check-ins
+    o.ta=r.ta;                                    // campus total: set once (same on both area rows)
   });
-  const per={}; selCampuses().forEach(ci=>{const o=byC[ci];per[ci]=o&&o.d?o.n/o.d*100:null;});
+  const per={}; let N=0,D=0;
+  selCampuses().forEach(ci=>{
+    let n=0,d=0; const wk=cw[ci]||{};
+    for(const w in wk){ if(wk[w].ta>0){ n+=wk[w].sc; d+=wk[w].ta; } }  // only weeks with a denominator
+    per[ci]=d?n/d*100:null; N+=n; D+=d;
+  });
   return {per,church:D?N/D*100:0};
 }
 function selSchoolYears(){return new Set(WEEKS.filter(w=>w.i>=state.from&&w.i<=state.to).map(w=>w.schoolYear));}
@@ -557,9 +562,10 @@ function attendanceTrend(){
   RAW.weekly.filter(r=>state.campuses.has(r.ci)&&areaMatch(r.area)&&win.includes(r.w))
     .forEach(r=>{const o=byW[r.w]||(byW[r.w]={n:0,d:0});o.n+=r.sc;
       const key=r.ci+"|"+r.w; if(!taSeen[key]){taSeen[key]=1;o.d+=r.ta;}});
-  const pts=win.map(w=>byW[w]&&byW[w].d?byW[w].n/byW[w].d*100:0);
+  const kept=win.filter(w=>byW[w]&&byW[w].d>0);            // drop weeks with no campus-total denominator
+  const pts=kept.map(w=>byW[w].n/byW[w].d*100);
   // thin x labels to ~ monthly
-  const labels=win.map((w,i)=>{const wk=WEEKS.find(x=>x.i===w);return (i===0||wk.date.getDate()<=7)?wk.month:"";});
+  const labels=kept.map(w=>{const wk=WEEKS.find(x=>x.i===w);return wk.date.getDate()<=7?wk.month:"";});
   return {pts,labels};
 }
 
