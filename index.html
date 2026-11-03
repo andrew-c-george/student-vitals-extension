@@ -523,11 +523,21 @@ function detailTable(rows){
   const t=el("table","detail");
   t.innerHTML="<tr><th>Student</th><th>Campus</th><th>Grade</th><th>Last visit</th><th>Days since</th></tr>"+
     (rows.length?rows.map(r=>{
-      const nm=(ROCK_BASE&&r[5])?`<a href="${ROCK_BASE}/person/${r[5]}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">${r[0]}</a>`:r[0];
+      const url=(ROCK_BASE&&r[5])?ROCK_BASE+"/person/"+r[5]:"";
+      const nm=url?`<a href="${url}" class="rock" data-url="${url}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none;cursor:pointer">${r[0]}</a>`:r[0];
       return `<tr><td class="nm">${nm}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`;
     }).join("")
       :`<tr><td colspan="5" style="color:var(--muted);font-style:italic">No students in this step for the current filters.</td></tr>`);
-  box.appendChild(t);return box;
+  box.appendChild(t);
+  // Tableau's extension iframe often blocks a plain target=_blank; open via JS on click,
+  // and only prevent the anchor default when the popup actually opened.
+  box.addEventListener("click",e=>{
+    const a=e.target.closest("a.rock"); if(!a) return;
+    const u=a.getAttribute("data-url"); if(!u) return;
+    let w=null; try{ w=window.open(u,"_blank","noopener"); }catch(_){ w=null; }
+    if(w) e.preventDefault();   // popup worked; otherwise let the <a> try its own navigation
+  });
+  return box;
 }
 function lineChart(xs,series,yMax,ref,refLabel){
   const W=560,H=150,pl=34,pr=70,pt=14,pb=22,gw=W-pl-pr,gh=H-pt-pb;
