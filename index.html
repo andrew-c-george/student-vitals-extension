@@ -172,6 +172,7 @@ const NC=FULL.length;
 const AHEAD="#1baf7a",BEHIND="#eb6834";
 const GOAL={attendance:8,serving:50,ratio:5};   // director-stated goals; others compare vs church avg
 const ROCK_BASE="https://rock.secc.org";   // links student names to their Rock profile: ROCK_BASE/person/<PersonId>
+const VERSION="2026-11-03c";               // shown in DATA CHECK so we can confirm the live file
 
 /* ---------- tiny helpers ---------- */
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
@@ -862,7 +863,11 @@ async function loadLive(){
       const tri=parseFloat(r.get(["TrimesterIndex","Trimester"]));const age=parseFloat(r.get(["AgeAtCheckin","Age"]));
       if(ci>=0&&isFinite(coh)){const key=pid||ci+"|"+coh+"|"+matched;const o=map[key]||(map[key]={ci,cohort:coh,active:new Set(),age:isFinite(age)?age:25});
         if(isFinite(tri))o.active.add(tri);o.active.add(coh);matched++;}});
-      const arr=Object.values(map);if(arr.length)RAW.leaders=arr;dbg.push({sheet:FEED_MAP.leaders.sheet,rows:L.rows.length,matched,leaders:arr.length,cols:L.colNames});}
+      const arr=Object.values(map);if(arr.length)RAW.leaders=arr;
+      const triSet=new Set(),cohSet=new Set();arr.forEach(l=>{cohSet.add(l.cohort);l.active.forEach(t=>triSet.add(t));});
+      const sizes=arr.slice(0,10).map(l=>l.active.size);
+      dbg.push({sheet:FEED_MAP.leaders.sheet,rows:L.rows.length,matched,leaders:arr.length,cols:L.colNames,
+        seen:[`distinct trimesters across feed=${triSet.size}`,`distinct cohorts=${cohSet.size}`,`active-set sizes (first 10 leaders): ${sizes.join(", ")}`]});}
   }catch(e){dbg.push({sheet:FEED_MAP.leaders.sheet,err:e.message});}
   renderAll();renderDebug(dbg);
 }
@@ -879,7 +884,7 @@ function renderDebug(dbg){
       ${d.seen?`<div style="color:#52514e;font-size:10.5px">${d.seen.join(" &nbsp;·&nbsp; ")}</div>`:""}</div>`;
   }).join("");
   box.innerHTML=`<details ${bad?"open":""} style="background:${bad?'#fff4ec':'#eef7f1'};border:1px solid ${bad?'#eb6834':'#1baf7a'};border-radius:8px;padding:8px 12px;margin:12px 0;font-size:11.5px">
-    <summary style="cursor:pointer;font-weight:700;color:${bad?'#b23b3b':'#1b7f4f'}">DATA CHECK — ${bad?'some feeds not matching, tap for detail (screenshot this)':'all feeds reading live'}</summary>
+    <summary style="cursor:pointer;font-weight:700;color:${bad?'#b23b3b':'#1b7f4f'}">DATA CHECK (${VERSION}) — ${bad?'some feeds not matching, tap for detail (screenshot this)':'all feeds reading live'}</summary>
     <div style="margin-top:8px">${rows}</div></details>`;
 }
 
