@@ -16,28 +16,40 @@
   html,body{margin:0;background:var(--surf);color:var(--ink);
     font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
   .wrap{max-width:1180px;margin:0 auto;padding:0 16px 32px}
-  /* header */
   .topbar{background:var(--header);color:#fff;display:flex;align-items:center;gap:14px;
     padding:14px 16px;border-radius:0 0 4px 4px}
   .topbar h1{font-size:22px;margin:0;font-weight:800}
   .topbar .sub{color:#c9d2dd;font-size:13px}
   .topbar .spacer{flex:1}
-  .pill{background:#3b4859;color:#ffd27a;font-size:10px;font-weight:700;letter-spacing:.3px;
-    padding:4px 9px;border-radius:9px;border:1px solid #55606f}
   /* tabs */
   .tabs{display:flex;gap:6px;margin:14px 0 8px}
   .tab{padding:7px 16px;border-radius:8px;border:1px solid var(--grid);background:var(--panel);
     color:var(--sec);font-weight:600;cursor:pointer;font-size:13px}
   .tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
   /* filter row */
-  .filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
+  .filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 2px;position:relative;z-index:30}
   .flabel{font-size:9px;color:var(--muted);font-weight:700;letter-spacing:.4px;margin-right:2px}
-  .chip{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--grid);
-    border-radius:8px;padding:6px 11px;font-size:12.5px;color:var(--sec)}
-  .chip.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-  .chip b{color:inherit}
+  .dd{position:relative}
+  .ddbtn{display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--grid);
+    border-radius:8px;padding:6px 11px;font-size:12.5px;color:var(--sec);cursor:pointer;white-space:nowrap}
+  .ddbtn b{color:var(--ink)}
+  .ddbtn .car{color:var(--muted);font-size:10px}
+  .ddpanel{display:none;position:absolute;top:calc(100% + 5px);left:0;background:#fff;border:1px solid var(--grid);
+    border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:8px;min-width:210px;z-index:50}
+  .dd.open .ddpanel{display:block}
+  .ddrow{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:6px;font-size:12.5px;color:var(--sec);cursor:pointer}
+  .ddrow:hover{background:var(--panel)}
+  .ddrow input{accent-color:var(--blue);width:14px;height:14px}
+  .ddsep{height:1px;background:var(--grid);margin:6px 2px}
+  .ddmini{display:flex;gap:8px;font-size:11.5px;color:var(--blue);padding:3px 7px}
+  .ddmini span{cursor:pointer;font-weight:600}
+  .seg{display:inline-flex;border:1px solid var(--grid);border-radius:8px;overflow:hidden;font-size:12px}
+  .seg button{border:none;background:var(--panel);color:var(--sec);padding:6px 11px;cursor:pointer;font-weight:600}
+  .seg button.on{background:var(--blue);color:#fff}
   .legend{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:12px;color:var(--sec)}
   .legend .k{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  .custrow{display:flex;gap:6px;align-items:center;padding:4px 7px}
+  .custrow select{font-size:12px;padding:3px 4px;border:1px solid var(--grid);border-radius:6px}
   /* section */
   .scard-head{font-size:11px;font-weight:700;color:var(--ink);margin:16px 0 8px}
   .section{margin-top:22px}
@@ -60,20 +72,26 @@
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:4px}
   .panel-t{font-weight:700;font-size:13px;margin:6px 0 1px}
   .panel-s{color:var(--muted);font-size:11px;margin-bottom:10px}
-  .bars{display:flex;flex-direction:column;gap:5px}
-  .bar{display:grid;grid-template-columns:96px 1fr auto;align-items:center;gap:8px;font-size:12px}
-  .bar .nm{color:var(--sec);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* ranked bars with one continuous reference line */
+  .rb{position:relative;margin-top:22px}
+  .rbrow{display:grid;grid-template-columns:96px 1fr 120px;align-items:center;gap:8px;font-size:12px;height:22px}
+  .rbrow .nm{color:var(--sec);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rbrow .vv{font-weight:700;font-size:12px;white-space:nowrap;text-align:left}
   .track{position:relative;height:17px;background:#fff;border-bottom:1px solid var(--grid)}
   .fill{height:17px;border-radius:0 2px 2px 0}
-  .refline{position:absolute;top:-3px;bottom:-3px;border-left:2px dashed var(--goal)}
-  .reftag{position:absolute;top:-16px;transform:translateX(-50%);font-size:9.5px;font-weight:700;color:var(--goal);white-space:nowrap}
-  .bar .vv{font-weight:700;font-size:12px;white-space:nowrap}
+  .rbref{position:absolute;top:1px;bottom:2px;left:104px;right:128px;pointer-events:none}
+  .rbref .ln{position:absolute;top:0;bottom:0;border-left:2px dashed var(--goal)}
+  .rbref .tg{position:absolute;top:-15px;transform:translateX(-50%);font-size:9.5px;font-weight:700;
+    color:var(--goal);white-space:nowrap;background:var(--surf);padding:0 4px}
+  .empty{color:var(--muted);font-size:12px;font-style:italic;padding:14px 0}
   /* funnel */
-  .funnel .fbar{display:grid;grid-template-columns:120px 1fr auto;align-items:center;gap:8px;margin:7px 0}
-  .funnel .fnm{color:var(--sec);text-align:right;font-size:12.5px}
-  .funnel .ftrack{height:26px}
-  .funnel .ffill{height:26px;border-radius:0 3px 3px 0}
+  .funnel .fbar{display:grid;grid-template-columns:120px 1fr auto;align-items:center;gap:8px;margin:7px 0;cursor:pointer}
+  .funnel .fbar .fnm{color:var(--sec);text-align:right;font-size:12.5px}
+  .funnel .ftrack{height:26px;background:#fff;border-bottom:1px solid var(--grid)}
+  .funnel .ffill{height:26px;border-radius:0 3px 3px 0;transition:opacity .12s}
   .funnel .fv{font-weight:800;font-size:14px}
+  .funnel .fbar.sel .fnm{color:var(--blue);font-weight:800}
+  .funnel .fbar.dim .ffill{opacity:.4}
   .hold{font-size:10.5px;color:var(--muted);margin:-3px 0 0 128px}
   /* detail table */
   table.detail{width:100%;border-collapse:collapse;font-size:12px}
@@ -81,13 +99,13 @@
   table.detail td{padding:5px 6px;color:var(--sec)}
   table.detail td.nm{color:var(--ink);font-weight:700}
   table.detail tr:nth-child(even){background:var(--panel)}
+  .detwrap{max-height:300px;overflow:auto}
   /* triangle */
   table.tri{border-collapse:separate;border-spacing:2px;font-size:11px}
   table.tri th{font-size:10px;color:var(--sec);font-weight:600;padding:2px 4px;text-align:center}
   table.tri td.coh{text-align:left;font-weight:700;color:var(--ink);white-space:nowrap;padding-right:6px}
   table.tri td.n{color:var(--sec);text-align:right;padding-right:6px}
   table.tri td.cell{width:46px;height:30px;text-align:center;color:#fff;font-weight:700;border-radius:3px}
-  /* svg line */
   svg.line{width:100%;height:150px;display:block}
   .foot-note{color:var(--muted);font-size:11px;font-style:italic;margin-top:20px}
   .toggle{display:inline-flex;border:1px solid var(--grid);border-radius:7px;overflow:hidden;font-size:11.5px}
@@ -110,125 +128,397 @@
   </div>
   <div class="filters">
     <span class="flabel">FILTERS</span>
-    <span class="chip active"><b>Campus</b> All ▾</span>
-    <span class="chip"><b>Date range</b> <span id="daterange">Last 52 weeks</span> ▾</span>
-    <span class="chip"><b>Area</b> HSM + MSM ▾</span>
+    <div class="dd" id="ddCampus">
+      <div class="ddbtn" data-dd="ddCampus"><b>Campus</b> <span id="campusLbl">All</span> <span class="car">▾</span></div>
+      <div class="ddpanel" id="campusPanel"></div>
+    </div>
+    <div class="dd" id="ddDate">
+      <div class="ddbtn" data-dd="ddDate"><b>Date range</b> <span id="dateLbl">Last 52 weeks</span> <span class="car">▾</span></div>
+      <div class="ddpanel" id="datePanel"></div>
+    </div>
+    <span class="flabel" style="margin-left:4px">AREA</span>
+    <span class="seg" id="areaSeg">
+      <button data-area="both" class="on">HSM + MSM</button>
+      <button data-area="HSM">HSM</button>
+      <button data-area="MSM">MSM</button>
+    </span>
     <span class="legend"><span>Bar color vs church average:</span>
       <span><span class="k" style="background:var(--ahead)"></span>Ahead</span>
       <span><span class="k" style="background:var(--behind)"></span>Behind</span></span>
   </div>
   <div id="student"></div>
   <div id="leader" style="display:none"></div>
-  <div class="foot-note" id="footnote">Summer (Jun–Jul) is excluded on attendance and ratio because student groups are on break; including it would understate the in-session average.</div>
+  <div class="foot-note" id="footnote">Summer (Jun–Jul) is excluded on attendance and ratio because student groups are on break. Students serving is tracked per school year, so it responds to campus, area and which school year(s) the date range covers, not to a shorter window. Leader retention is cohort-based, so the date range does not change it.</div>
 </div>
 
 <script>
 /* ============================================================
-   SAMPLE DATA  (mirrors the approved mockup; replaced by live
-   worksheet data when running inside Tableau — see loadLive()).
+   Student Vitals extension — fully interactive.
+   All metrics are computed in code from raw, filterable feeds
+   (per week x campus x area, plus person-level funnel/baptism
+   and leader-cohort rows). Campus, Date range, Area and the
+   funnel drill all recompute the charts. Outside Tableau the
+   feeds are generated as sample data so the controls are live
+   in preview; inside Tableau, loadLive() fills the same feeds.
    ============================================================ */
 const SHORT=["Blankenbaker","Bullitt Co.","Crestwood","Indiana","E-town","La Grange",
   "Nelson Co.","Shelby Co.","Southwest","Prospect","S. Louisville","Franklin"];
-// full campus names as they come from the views (used to match live worksheet rows)
 const FULL=["Blankenbaker","Bullitt County","Crestwood","Indiana","Elizabethtown","La Grange",
   "Nelson County","Shelby County","Southwest","Prospect","South Louisville","Franklin"];
-const SAMPLE={
-  cards_student:[
-    {lab:"NEW STUDENTS CONNECTED",val:"28%",delta:"+4 pts",good:true,ref:"vs church avg"},
-    {lab:"STUDENTS, % OF TOTAL ATTENDANCE",val:"5.3%",delta:"+0.4 pts",good:true,ref:"goal 8%"},
-    {lab:"BAPTIZED 11-18, NOT IN A GROUP",val:"54%",delta:"-4 pts",good:true,ref:"lower is better"},
-    {lab:"STUDENTS SERVING",val:"18%",delta:"+2 pts",good:true,ref:""}],
-  funnel:[{s:"1st check-in",v:540},{s:"2nd check-in",v:330},{s:"3rd check-in",v:210},{s:"Connected (4+)",v:150}],
-  detail:[["Mia R.","Blankenbaker","8","Oct 5, 2026","25"],["Caleb T.","Bullitt Co.","10","Sep 28, 2026","32"],
-    ["Ava L.","Crestwood","7","Sep 14, 2026","46"],["Noah P.","Indiana","9","Aug 31, 2026","60"],
-    ["Ella M.","E-town","11","Oct 12, 2026","18"],["Liam K.","Southwest","8","Jul 20, 2026","102"],
-    ["Zoe B.","La Grange","12","Sep 7, 2026","53"]],
-  attendance:{vals:[5.4,9.8,6.5,4.2,4.6,5.2,3.8,4.3,5.3,3.5,5.6,4.4],avg:5.3,goal:8,
-    trend:[4.3,5.1,5.6,5.4,4.9,5.0,5.7,5.9,5.3,4.8],readout:"5.3%  =  312 students / 5,920 total"},
-  baptism:{vals:[50.7,37.5,39.1,50.7,55.9,59.6,73.0,61.6,51.1,45.8,100,37.5],avg:54,
-    ann:["170/335","42/112","34/87","35/69","38/68","28/47","73/100","53/86","23/45","22/48","4/4","3/8"]},
-  serving:{vals:[22,18,20,16,19,17,14,15,21,13,24,12],avg:18,goal:50},
-  cards_leader:[
-    {lab:"LEADER RETENTION (current trimester)",val:"73%",delta:"+2 pts",good:true,ref:"vs church avg"},
-    {lab:"STUDENTS PER LEADER (avg week)",val:"6.6 : 1",delta:"-0.3",good:true,ref:"goal 5:1"},
-    {lab:"LEADERS AGED 18-29 (AIM3)",val:"20%",delta:"+3 pts",good:true,ref:""}],
-  triangle:{cohorts:["2024 - T3","2025 - T1","2025 - T2","2025 - T3","2026 - T1","2026 - T2","2026 - T3"],
-    counts:[31,40,86,25,30,98,24],cols:["24-T3","25-T1","25-T2","25-T3","26-T1","26-T2","26-T3"],
-    M:[[100,81,52,42,42,39,29],[null,100,73,58,58,50,43],[null,null,100,95,85,77,53],
-       [null,null,null,100,76,64,44],[null,null,null,null,100,80,60],[null,null,null,null,null,100,88],
-       [null,null,null,null,null,null,100]]},
-  survival:{x:["start","+1","+2","+3","+4"],
-    series:[{nm:"Blankenbaker",v:[100,88,81,79,78]},{nm:"S. Louisville",v:[100,86,80,78,77]},
-      {nm:"Prospect",v:[100,74,66,62,60]},{nm:"Nelson Co.",v:[100,76,68,64,62]}]},
-  retComp:{vals:[58,51,54,46,52,49,44,50,55,42,56,47],avg:52},
-  ratio:{vals:[5.1,11.3,7.5,8.2,6.4,5.8,9.1,7.0,6.2,4.5,5.0,6.8],avg:6.6,goal:5},
-  aim3:{vals:[24,18,21,15,19,22,16,17,20,14,27,18],avg:20,
-    ann:["100/417","22/122","28/133","15/100","16/84","19/86","11/69","13/76","24/120","9/64","8/30","5/28"]}
-};
-
-/* ---------- helpers ---------- */
+const NC=FULL.length;
 const AHEAD="#1baf7a",BEHIND="#eb6834";
+const GOAL={attendance:8,serving:50,ratio:5};   // director-stated goals; others compare vs church avg
+
+/* ---------- tiny helpers ---------- */
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const mean=a=>a.length?sum(a)/a.length:0;
+const fmtDate=d=>d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+function seeded(s){return function(){s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+
+/* ---------- week model ---------- */
+const WEEKS=[];           // {i,date,label,month,schoolYear,summer}
+(function buildWeeks(){
+  const today=new Date(); const day=today.getDay();
+  const lastSun=new Date(today); lastSun.setDate(today.getDate()-day);   // most recent Sunday
+  for(let k=59;k>=0;k--){
+    const d=new Date(lastSun); d.setDate(lastSun.getDate()-k*7);
+    const m=d.getMonth();                     // 0=Jan
+    const summer=(m===5||m===6);              // Jun, Jul
+    const yr=d.getFullYear();
+    const sy=(m>=7)?`${yr}-${String((yr+1)).slice(2)}`:`${yr-1}-${String(yr).slice(2)}`;
+    WEEKS.push({i:WEEKS.length,date:d,label:fmtDate(d),month:d.toLocaleDateString("en-US",{month:"short"}),schoolYear:sy,summer});
+  }
+})();
+const LASTSY=WEEKS[WEEKS.length-1].schoolYear;
+const INSESS=WEEKS.filter(w=>!w.summer);                   // in-session weeks
+
+/* ---------- trimester model (for leader retention) ---------- */
+const TRIS=[];            // last 7 trimesters {idx,label,short}
+(function buildTris(){
+  const now=WEEKS[WEEKS.length-1].date; let y=now.getFullYear(); let m=now.getMonth();
+  let tno=m<=3?1:(m<=7?2:3);
+  for(let k=6;k>=0;k--){
+    let yy=y, tt=tno-k;
+    while(tt<=0){tt+=3;yy-=1;}
+    const idx=yy*3+tt;
+    TRIS.push({idx,label:`${yy} - T${tt}`,short:`${String(yy).slice(2)}-T${tt}`});
+  }
+  TRIS.sort((a,b)=>a.idx-b.idx);
+})();
+
+/* ============================================================
+   RAW feeds (filled by genSample or loadLive)
+   weekly: one row per campus x week x area
+   baptism/funnel: person-level
+   leaders: one row per leader (with the set of trimesters active)
+   ============================================================ */
+const RAW={weekly:[],serving:[],baptism:[],funnel:[],leaders:[]};
+
+function genSample(){
+  const R=seeded(20260914);
+  const camStrength=FULL.map((_,i)=>0.75+((i*37)%100)/100*0.7);   // deterministic 0.75..1.45
+  RAW.weekly=[];RAW.serving=[];RAW.baptism=[];RAW.funnel=[];RAW.leaders=[];
+  // ---- weekly feed (attendance, ratio, AIM3/leaders) ----
+  INSESS.forEach(w=>{
+    for(let ci=0;ci<NC;ci++){
+      const base=camStrength[ci];
+      ["HSM","MSM"].forEach(area=>{
+        const scale=area==="HSM"?1:0.78;
+        const totalAtt=Math.round((900+ci*55)*(area==="HSM"?1:0.6)*(0.92+0.16*R()));
+        const sc=Math.round(totalAtt*(0.035+0.03*base)*(0.9+0.2*R())*scale);
+        const att=Math.max(8,Math.round(sc*(0.9+0.2*R())));         // distinct attending students that wk
+        const leaders=Math.max(2,Math.round(att/(4.5+2.5*R())/base));
+        const ltot=leaders;
+        const l1829=Math.round(ltot*(0.12+0.22*base)*(0.8+0.4*R()));
+        RAW.weekly.push({ci,w:w.i,area,sc,ta:totalAtt,att,students:att,leaders,ltot,l1829});
+      });
+    }
+  });
+  // ---- serving feed (per campus x area x SCHOOL YEAR; serving is not weekly) ----
+  const SYs=[...new Set(WEEKS.map(w=>w.schoolYear))];
+  SYs.forEach(sy=>{
+    for(let ci=0;ci<NC;ci++){
+      const base=camStrength[ci];
+      ["HSM","MSM"].forEach(area=>{
+        const att=Math.round((70+ci*9)*(area==="HSM"?1:0.7)*(0.85+0.3*R()));   // distinct students that year
+        const serv=Math.round(att*(0.12+0.16*base)*(0.8+0.4*R()));             // distinct servers that year
+        RAW.serving.push({ci,area,sy,serv,att});
+      });
+    }
+  });
+  // ---- baptism events (person level) ----
+  INSESS.forEach(w=>{
+    for(let ci=0;ci<NC;ci++){
+      const n=R()<0.5?0:Math.round(R()*3);
+      for(let k=0;k<n;k++){
+        const age=11+Math.floor(R()*8);                 // 11..18
+        const connected=R()<(0.35+0.12*camStrength[ci])?1:0;
+        RAW.baptism.push({ci,date:new Date(w.date),age,connected});
+      }
+    }
+  });
+  // ---- funnel persons (first-timers in the window) ----
+  const FIRST=["Mia","Caleb","Ava","Noah","Ella","Liam","Zoe","Eli","Nora","Owen","Ivy","Luke","Ruby","Jack","Lucy","Max","Cora","Leo","Jane","Sam"];
+  const LAST=["R.","T.","L.","P.","M.","K.","B.","S.","H.","W.","G.","C.","D.","F.","N."];
+  INSESS.forEach(w=>{
+    for(let ci=0;ci<NC;ci++){
+      // ~0.7-1 new first-timer per campus per week -> ~500-600 church-wide over the window
+      const lam=0.55*camStrength[ci];
+      const n=(R()<lam?1:0)+(R()<lam*0.4?1:0);
+      for(let k=0;k<n;k++){
+        const r=R();
+        let checkins=1;                                  // cascade ~ 540/330/210/150 (mockup holds)
+        if(r>0.39)checkins=2; if(r>0.61)checkins=3; if(r>0.72)checkins=4;
+        const wkLater=Math.min(WEEKS.length-1,w.i+(checkins-1)*2+Math.floor(R()*2));
+        const lastDate=WEEKS[wkLater].date;
+        const days=Math.round((WEEKS[WEEKS.length-1].date-lastDate)/86400000);
+        RAW.funnel.push({ci,name:FIRST[Math.floor(R()*FIRST.length)]+" "+LAST[Math.floor(R()*LAST.length)],
+          grade:6+Math.floor(R()*7),firstDate:new Date(w.date),checkins,lastDate,days});
+      }
+    }
+  });
+  // ---- leaders (cohort + survival) ----
+  const lastTri=TRIS[TRIS.length-1].idx;
+  for(let ci=0;ci<NC;ci++){
+    const N=14+Math.round(camStrength[ci]*22);
+    for(let k=0;k<N;k++){
+      const cohort=TRIS[Math.floor(R()*TRIS.length)].idx;
+      const active=new Set([cohort]);
+      let alive=true, ret=0.78+0.12*camStrength[ci]*0.5;
+      for(let t=cohort+1;t<=lastTri;t++){
+        if(alive && R()<ret) active.add(t); else alive=false;
+      }
+      const age=17+Math.floor(R()*20);
+      RAW.leaders.push({ci,cohort,active,age});
+    }
+  }
+}
+
+/* ============================================================
+   FILTER STATE + compute
+   ============================================================ */
+const state={campuses:new Set(FULL.map((_,i)=>i)),area:"both",preset:"52",from:INSESS[0].i,to:INSESS[INSESS.length-1].i,step:2,retMode:"tri",page:"student"};
+
+function activeWeekIdx(){                       // in-session week indices within [from,to]
+  return INSESS.filter(w=>w.i>=state.from&&w.i<=state.to).map(w=>w.i);
+}
+function selCampuses(){return [...state.campuses].sort((a,b)=>a-b);}
+function areaMatch(a){return state.area==="both"?true:a===state.area;}
+function dateBounds(){return [WEEKS.find(w=>w.i===state.from).date, WEEKS.find(w=>w.i===state.to).date];}
+
+// weekly rows matching current campus/area/date filter
+function weeklyRows(){
+  const lo=state.from,hi=state.to;
+  return RAW.weekly.filter(r=>state.campuses.has(r.ci)&&areaMatch(r.area)&&r.w>=lo&&r.w<=hi);
+}
+// generic per-campus pooled ratio metric: num/den summed
+function pooled(numKey,denKey){
+  const rows=weeklyRows();
+  const byC={}; let N=0,D=0;
+  rows.forEach(r=>{const o=byC[r.ci]||(byC[r.ci]={n:0,d:0});o.n+=r[numKey];o.d+=r[denKey];N+=r[numKey];D+=r[denKey];});
+  const per={}; selCampuses().forEach(ci=>{const o=byC[ci];per[ci]=o&&o.d?o.n/o.d:null;});
+  return {per,church:D?N/D:0};
+}
+// weekly-average metric (distinct counts): mean over weeks of num/den
+function weeklyAvg(numKey,denKey){
+  const rows=weeklyRows();
+  const byCW={};                    // ci -> week -> {n,d}
+  const chW={};
+  rows.forEach(r=>{
+    (byCW[r.ci]=byCW[r.ci]||{});
+    const o=byCW[r.ci][r.w]||(byCW[r.ci][r.w]={n:0,d:0});o.n+=r[numKey];o.d+=r[denKey];
+    const c=chW[r.w]||(chW[r.w]={n:0,d:0});c.n+=r[numKey];c.d+=r[denKey];
+  });
+  const per={};
+  selCampuses().forEach(ci=>{
+    const wk=byCW[ci]; if(!wk){per[ci]=null;return;}
+    const rates=Object.values(wk).filter(o=>o.d>0).map(o=>o.n/o.d);
+    per[ci]=rates.length?mean(rates):null;
+  });
+  const chRates=Object.values(chW).filter(o=>o.d>0).map(o=>o.n/o.d);
+  return {per,church:chRates.length?mean(chRates):0};
+}
+
+// ---- metric wrappers (return {per(by ci), church}) ----
+// attendance: student check-ins (per area) / total campus attendance (counted ONCE per campus-week,
+// since the campus total is repeated on each area row of the feed).
+function mAttendance(){
+  const rows=weeklyRows();
+  const byC={}; const taSeen={}; let N=0,D=0;
+  rows.forEach(r=>{
+    const o=byC[r.ci]||(byC[r.ci]={n:0,d:0});
+    o.n+=r.sc; N+=r.sc;
+    const key=r.ci+"|"+r.w;
+    if(!taSeen[key]){taSeen[key]=1; o.d+=r.ta; D+=r.ta;}
+  });
+  const per={}; selCampuses().forEach(ci=>{const o=byC[ci];per[ci]=o&&o.d?o.n/o.d*100:null;});
+  return {per,church:D?N/D*100:0};
+}
+function selSchoolYears(){return new Set(WEEKS.filter(w=>w.i>=state.from&&w.i<=state.to).map(w=>w.schoolYear));}
+function mServing(){
+  const sy=selSchoolYears();
+  const rows=RAW.serving.filter(r=>state.campuses.has(r.ci)&&areaMatch(r.area)&&sy.has(r.sy));
+  const byC={};let N=0,D=0;
+  rows.forEach(r=>{const o=byC[r.ci]||(byC[r.ci]={n:0,d:0});o.n+=r.serv;o.d+=r.att;N+=r.serv;D+=r.att;});
+  const per={};selCampuses().forEach(ci=>{const o=byC[ci];per[ci]=o&&o.d?o.n/o.d*100:null;});
+  return {per,church:D?N/D*100:0};
+}
+const mRatio     =()=>{const rows=weeklyRows();const byC={};let S=0,L=0;
+  rows.forEach(r=>{const o=byC[r.ci]||(byC[r.ci]={s:0,l:0});o.s+=r.students;o.l+=r.leaders;S+=r.students;L+=r.leaders;});
+  const per={};selCampuses().forEach(ci=>{const o=byC[ci];per[ci]=o&&o.l?o.s/o.l:null;});
+  return {per,church:L?S/L:0};};
+const mAim3      =()=>{const p=weeklyAvg("l1829","ltot");return {per:scale100(p.per),church:p.church*100};};
+function scale100(obj){const o={};for(const k in obj)o[k]=obj[k]==null?null:obj[k]*100;return o;}
+
+// baptism % NOT connected (person/event level)
+function mBaptism(){
+  const [d0,d1]=dateBounds();
+  const rows=RAW.baptism.filter(b=>state.campuses.has(b.ci)&&b.age>=11&&b.age<=18&&b.date>=d0&&b.date<=d1);
+  const byC={}; let N=0,T=0;
+  rows.forEach(b=>{const o=byC[b.ci]||(byC[b.ci]={n:0,t:0});o.t++;if(!b.connected)o.n++;T++;if(!b.connected)N++;});
+  const per={},ann={};
+  selCampuses().forEach(ci=>{const o=byC[ci];per[ci]=o&&o.t?o.n/o.t*100:null;ann[ci]=o?`${o.n}/${o.t}`:"0/0";});
+  return {per,church:T?N/T*100:0,ann};
+}
+// funnel (person level), filtered by campus + first check-in date in range
+function mFunnel(){
+  const [d0,d1]=dateBounds();
+  const rows=RAW.funnel.filter(p=>state.campuses.has(p.ci)&&p.firstDate>=d0&&p.firstDate<=d1);
+  const s=[1,2,3,4].map(k=>rows.filter(p=>p.checkins>=k).length);
+  return {rows,steps:[{s:"1st check-in",v:s[0]},{s:"2nd check-in",v:s[1]},{s:"3rd check-in",v:s[2]},{s:"Connected (4+)",v:s[3]}]};
+}
+function detailRows(funnelRows,step){
+  return funnelRows.filter(p=>p.checkins>=step)
+    .sort((a,b)=>b.lastDate-a.lastDate)
+    .map(p=>[p.name,SHORT[p.ci],String(p.grade),fmtDate(p.lastDate),String(p.days)]);
+}
+// leader retention
+function mRetention(){
+  const L=RAW.leaders.filter(l=>state.campuses.has(l.ci));
+  const lastTri=TRIS[TRIS.length-1].idx;
+  // triangle: cohort x later trimester
+  const cohorts=TRIS.slice();
+  const M=cohorts.map(c=>{
+    const members=L.filter(l=>l.cohort===c.idx);
+    const row=TRIS.map(t=>{
+      if(t.idx<c.idx||!members.length) return null;
+      const still=members.filter(l=>l.active.has(t.idx)).length;
+      return Math.round(still/members.length*100);
+    });
+    return {label:c.label,short:c.short,count:members.length,row};
+  });
+  // retained one year on, by campus (3 trimesters back cohort still active now)
+  const backTri=TRIS[Math.max(0,TRIS.length-4)].idx;
+  const per={};
+  selCampuses().forEach(ci=>{
+    const grp=L.filter(l=>l.ci===ci&&l.cohort<=backTri);
+    const still=grp.filter(l=>l.active.has(lastTri)).length;
+    per[ci]=grp.length?still/grp.length*100:null;
+  });
+  const retVals=Object.values(per).filter(v=>v!=null);
+  // survival curve by school-year-ish cohort: trimesters since start
+  const curveCohorts=TRIS.slice(0,4);
+  const series=curveCohorts.map(c=>{
+    const members=L.filter(l=>l.cohort===c.idx);
+    const v=[]; for(let k=0;k<5;k++){const t=c.idx+k;if(t>lastTri)break;
+      v.push(members.length?Math.round(members.filter(l=>l.active.has(t)).length/members.length*100):0);}
+    return {nm:c.short,v};
+  }).filter(s=>s.v.length>=2);
+  // current-trimester church retention (prev cohort still active latest)
+  const prev=TRIS[TRIS.length-2].idx;
+  const prevMembers=L.filter(l=>l.cohort<=prev);
+  const churchRet=prevMembers.length?prevMembers.filter(l=>l.active.has(lastTri)).length/prevMembers.length*100:0;
+  return {M,per,church:churchRet,series,retMean:retVals.length?mean(retVals):0};
+}
+
+/* ---------- prior-window deltas (for scorecard tiles) ---------- */
+function withPrior(fn){
+  const cur=fn();
+  const save={from:state.from,to:state.to};
+  const win=activeWeekIdx();
+  if(win.length){
+    const span=win.length;
+    const idxInSess=INSESS.map(w=>w.i);
+    const startPos=idxInSess.indexOf(win[0]);
+    const priorSlice=idxInSess.slice(Math.max(0,startPos-span),startPos);
+    if(priorSlice.length){state.from=priorSlice[0];state.to=priorSlice[priorSlice.length-1];
+      const prior=fn(); state.from=save.from;state.to=save.to;
+      return {cur,prior};}
+  }
+  state.from=save.from;state.to=save.to;
+  return {cur,prior:null};
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function cardTile(lab,val,delta,good,ref){
+  const col=good?AHEAD:BEHIND, dc=good?"var(--good)":BEHIND;
+  const ar=delta==null?"":(delta>=0?"▲":"▼");
+  const dtxt=delta==null?"":(Math.abs(delta)>=10?Math.round(Math.abs(delta)):Math.abs(delta).toFixed(1));
+  return el("div","card",
+    `<div class="accent" style="background:${col}"></div>
+     <div class="lab">${lab}</div><div class="val">${val}</div>
+     <div class="foot"><span class="delta" style="color:${dc}">${ar} ${dtxt?dtxt+" pts":""}</span>
+     <span class="ref">${ref||""}</span></div>`);
+}
+// ranked bars from a {ci:value} map over selected campuses
+function rankedBars(perMap,higherBetter,church,lineRef,lineLabel,fmt,annMap){
+  const items=selCampuses().map(ci=>({ci,v:perMap[ci]})).filter(o=>o.v!=null);
+  const wrap=el("div","rb");
+  if(!items.length){wrap.appendChild(el("div","empty","No data for this selection."));return wrap;}
+  items.sort((a,b)=>b.v-a.v);
+  const max=Math.max(...items.map(o=>o.v),lineRef)*1.14;
+  const rows=el("div");
+  items.forEach(o=>{
+    const good=higherBetter?(o.v>=church):(o.v<=church), col=good?AHEAD:BEHIND;
+    const w=(o.v/max*100).toFixed(1);
+    rows.appendChild(el("div","rbrow",
+      `<div class="nm">${SHORT[o.ci]}</div>
+       <div class="track"><div class="fill" style="width:${w}%;background:${col}"></div></div>
+       <div class="vv">${fmt(o.v)}${annMap?` <span style="color:var(--muted);font-weight:600">(${annMap[o.ci]})</span>`:""}</div>`));
+  });
+  wrap.appendChild(rows);
+  const rp=(lineRef/max*100).toFixed(2);
+  const ov=el("div","rbref");
+  ov.innerHTML=`<div class="ln" style="left:${rp}%"></div><div class="tg" style="left:${rp}%">${lineLabel}</div>`;
+  wrap.appendChild(ov);
+  return wrap;
+}
 function section(num,title,take){
   const s=el("div","section");
   s.innerHTML=`<div><span class="snum">${num}</span><span class="stitle">${title}</span></div><hr>`+
     (take?`<div class="take">${take}</div>`:"");
   return s;
 }
-function cards(list,three){
-  const g=el("div","cards"+(three?" three":""));
-  list.forEach(c=>{
-    const col=c.good?AHEAD:BEHIND, dc=c.good?"var(--good)":BEHIND, ar=c.delta.trim().startsWith("-")?"▼":"▲";
-    g.appendChild(el("div","card",
-      `<div class="accent" style="background:${col}"></div>
-       <div class="lab">${c.lab}</div><div class="val">${c.val}</div>
-       <div class="foot"><span class="delta" style="color:${dc}">${ar} ${c.delta}</span>
-       <span class="ref">${c.ref}</span></div>`));
-  });
-  return g;
-}
-// ranked horizontal bars; color vs avg (higherBetter), dashed reference at lineRef
-function rankedBars(data,labels,higherBetter,avg,lineRef,lineLabel,fmt,ann){
-  const idx=data.map((v,i)=>i).sort((a,b)=>data[b]-data[a]);
-  const max=Math.max(...data,lineRef)*1.14;
-  const wrap=el("div","bars");
-  idx.forEach(i=>{
-    const v=data[i], good=higherBetter?(v>=avg):(v<=avg), col=good?AHEAD:BEHIND;
-    const w=(v/max*100).toFixed(1), rp=(lineRef/max*100).toFixed(1);
-    const row=el("div","bar",
-      `<div class="nm">${labels[i]}</div>
-       <div class="track"><div class="fill" style="width:${w}%;background:${col}"></div>
-         <div class="refline" style="left:${rp}%"></div></div>
-       <div class="vv">${fmt(v)}${ann?`  <span style="color:var(--muted);font-weight:600">(${ann[i]})</span>`:""}</div>`);
-    wrap.appendChild(row);
-  });
-  // reference tag on the first row's track
-  const firstTrack=wrap.querySelector(".track");
-  if(firstTrack){const t=el("div","reftag",lineLabel);t.style.left=(lineRef/max*100)+"%";firstTrack.appendChild(t);}
-  return wrap;
-}
-function funnel(f){
-  const wrap=el("div","funnel");const max=f[0].v;
+function funnelChart(steps,onClick){
+  const wrap=el("div","funnel");const max=steps[0].v||1;
   const ramp=["#86b6ef","#5598e7","#2a78d6"];
-  f.forEach((d,i)=>{
-    const col=i===f.length-1?AHEAD:ramp[i];
-    wrap.appendChild(el("div","fbar",
-      `<div class="fnm">${d.s}</div>
+  steps.forEach((d,i)=>{
+    const col=i===steps.length-1?AHEAD:ramp[i];
+    const bar=el("div","fbar"+(state.step===i+1?" sel":"")+(state.step&&state.step!==i+1?" dim":""));
+    bar.innerHTML=`<div class="fnm">${d.s}</div>
        <div class="ftrack"><div class="ffill" style="width:${(d.v/max*100).toFixed(1)}%;background:${col}"></div></div>
-       <div class="fv">${d.v}${i===f.length-1?" ✓":""}</div>`));
-    if(i>0){const pct=Math.round(d.v/f[i-1].v*100);wrap.appendChild(el("div","hold",`${pct}% hold →`));}
+       <div class="fv">${d.v}${i===steps.length-1?" ✓":""}</div>`;
+    bar.onclick=()=>onClick(i+1);
+    wrap.appendChild(bar);
+    if(i>0){const pct=steps[i-1].v?Math.round(d.v/steps[i-1].v*100):0;wrap.appendChild(el("div","hold",`${pct}% hold →`));}
   });
   return wrap;
 }
 function detailTable(rows){
+  const box=el("div","detwrap");
   const t=el("table","detail");
-  t.innerHTML="<tr><th>Student</th><th>Campus</th><th>Grade</th><th>2nd (last) visit</th><th>Days since</th></tr>"+
-    rows.map(r=>`<tr><td class="nm">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join("");
-  return t;
+  t.innerHTML="<tr><th>Student</th><th>Campus</th><th>Grade</th><th>Last visit</th><th>Days since</th></tr>"+
+    (rows.length?rows.map(r=>`<tr><td class="nm">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join("")
+      :`<tr><td colspan="5" style="color:var(--muted);font-style:italic">No students in this step for the current filters.</td></tr>`);
+  box.appendChild(t);return box;
 }
 function lineChart(xs,series,yMax,ref,refLabel){
   const W=560,H=150,pl=34,pr=70,pt=14,pb=22,gw=W-pl-pr,gh=H-pt-pb;
-  const xf=i=>pl+gw*(i/(xs.length-1)), yf=v=>pt+gh*(1-v/yMax);
+  const n=xs.length;
+  const xf=i=>pl+gw*(n<=1?0.5:i/(n-1)), yf=v=>pt+gh*(1-v/yMax);
   const colors=["#2a78d6","#1baf7a","#eb6834","#6250d6"];
   let s=`<svg class="line" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">`;
   [0,yMax/2,yMax].forEach(g=>{s+=`<line x1="${pl}" x2="${W-pr}" y1="${yf(g)}" y2="${yf(g)}" stroke="#e1e0d9"/>`+
@@ -236,21 +526,22 @@ function lineChart(xs,series,yMax,ref,refLabel){
   if(ref!=null){s+=`<line x1="${pl}" x2="${W-pr}" y1="${yf(ref)}" y2="${yf(ref)}" stroke="#1f2a37" stroke-dasharray="4 3"/>`+
     `<text x="${pl+2}" y="${yf(ref)-3}" font-size="9" font-weight="700" fill="#1f2a37">${refLabel}</text>`;}
   series.forEach((ser,k)=>{
+    if(!ser.v.length)return;
     const pts=ser.v.map((v,i)=>`${xf(i)},${yf(v)}`).join(" ");
     s+=`<polyline points="${pts}" fill="none" stroke="${colors[k%4]}" stroke-width="2.2"/>`;
     s+=`<circle cx="${xf(ser.v.length-1)}" cy="${yf(ser.v[ser.v.length-1])}" r="4" fill="${colors[k%4]}"/>`;
-    s+=`<text x="${xf(ser.v.length-1)+6}" y="${yf(ser.v[ser.v.length-1])+3}" font-size="10" font-weight="700" fill="${colors[k%4]}">${ser.nm?ser.nm:ser.v[ser.v.length-1]+"%"}</text>`;
+    s+=`<text x="${xf(ser.v.length-1)+6}" y="${yf(ser.v[ser.v.length-1])+3}" font-size="10" font-weight="700" fill="${colors[k%4]}">${ser.nm?ser.nm:Math.round(ser.v[ser.v.length-1])+"%"}</text>`;
   });
-  xs.forEach((x,i)=>{s+=`<text x="${xf(i)}" y="${H-6}" font-size="9" fill="#898781" text-anchor="middle">${x}</text>`;});
+  xs.forEach((x,i)=>{if(x)s+=`<text x="${xf(i)}" y="${H-6}" font-size="9" fill="#898781" text-anchor="middle">${x}</text>`;});
   return s+"</svg>";
 }
-function triangle(tr){
-  const blue=t=>{const a=0.18+0.72*t;return `rgba(${Math.round(42+(13-42)*t)},${Math.round(120+(79-120)*t)},${Math.round(214+(149-214)*t)},1)`;};
+function triangle(M,cols){
+  const blue=t=>`rgba(${Math.round(42+(13-42)*t)},${Math.round(120+(79-120)*t)},${Math.round(214+(149-214)*t)},1)`;
   let s='<table class="tri"><tr><th style="text-align:left">Start trimester</th><th>n</th>'+
-    tr.cols.map(c=>`<th>${c}</th>`).join("")+"</tr>";
-  tr.cohorts.forEach((co,i)=>{
-    s+=`<tr><td class="coh">${co}</td><td class="n">${tr.counts[i]}</td>`;
-    tr.M[i].forEach(v=>{
+    cols.map(c=>`<th>${c}</th>`).join("")+"</tr>";
+  M.forEach(r=>{
+    s+=`<tr><td class="coh">${r.label}</td><td class="n">${r.count}</td>`;
+    r.row.forEach(v=>{
       if(v==null){s+=`<td></td>`;}
       else{const t=v/100;s+=`<td class="cell" style="background:${blue(t)};color:${t>0.5?'#fff':'#0b0b0b'}">${v}%</td>`;}
     });
@@ -259,46 +550,86 @@ function triangle(tr){
   return s+"</table>";
 }
 
-/* ---------- render pages ---------- */
-function renderStudent(d){
+/* ---------- attendance trend (church-wide weekly, respects filters) ---------- */
+function attendanceTrend(){
+  const win=activeWeekIdx();
+  const byW={}; const taSeen={};
+  RAW.weekly.filter(r=>state.campuses.has(r.ci)&&areaMatch(r.area)&&win.includes(r.w))
+    .forEach(r=>{const o=byW[r.w]||(byW[r.w]={n:0,d:0});o.n+=r.sc;
+      const key=r.ci+"|"+r.w; if(!taSeen[key]){taSeen[key]=1;o.d+=r.ta;}});
+  const pts=win.map(w=>byW[w]&&byW[w].d?byW[w].n/byW[w].d*100:0);
+  // thin x labels to ~ monthly
+  const labels=win.map((w,i)=>{const wk=WEEKS.find(x=>x.i===w);return (i===0||wk.date.getDate()<=7)?wk.month:"";});
+  return {pts,labels};
+}
+
+/* ============================================================
+   PAGE RENDERERS
+   ============================================================ */
+function renderStudent(){
   const root=document.getElementById("student");root.innerHTML="";
-  root.appendChild(el("div","scard-head","THE SCORECARD — church-wide, selected range vs prior"));
-  root.appendChild(cards(d.cards_student));
+  const att=mAttendance(), serv=mServing(), bap=mBaptism(), fun=mFunnel();
+  // scorecard tiles with deltas
+  const attD=withPrior(mAttendance), servD=withPrior(mServing), bapD=withPrior(mBaptism);
+  const funD=withPrior(()=>{const f=mFunnel();return {conn:f.steps[0].v?f.steps[3].v/f.steps[0].v*100:0};});
+  const connCur=fun.steps[0].v?fun.steps[3].v/fun.steps[0].v*100:0;
+  const connPrior=funD.prior?funD.prior.conn:null;
+  root.appendChild(el("div","scard-head","THE SCORECARD — church-wide, selected range vs prior period"));
+  const cg=el("div","cards");
+  cg.appendChild(cardTile("NEW STUDENTS CONNECTED",Math.round(connCur)+"%",connPrior==null?null:connCur-connPrior,connPrior==null?true:connCur>=connPrior,"vs church avg"));
+  cg.appendChild(cardTile("STUDENTS, % OF TOTAL ATTENDANCE",att.church.toFixed(1)+"%",attD.prior?att.church-attD.prior.church:null,attD.prior?att.church>=attD.prior.church:true,"goal 8%"));
+  cg.appendChild(cardTile("BAPTIZED 11-18, NOT IN A GROUP",Math.round(bap.church)+"%",bapD.prior?bap.church-bapD.prior.church:null,bapD.prior?bap.church<=bapD.prior.church:true,"lower is better"));
+  cg.appendChild(cardTile("STUDENTS SERVING",Math.round(serv.church)+"%",servD.prior?serv.church-servD.prior.church:null,servD.prior?serv.church>=servD.prior.church:true,""));
+  root.appendChild(cg);
+
   // 1 funnel + detail
   root.appendChild(section("1","NEW STUDENT RETENTION FUNNEL",
-    "Click a step to pull the students in it. Biggest drop-off is 1st → 2nd. 150 of 540 reached connected."));
+    "Click a step to pull the students in it. "+(fun.steps[0].v?`${fun.steps[3].v} of ${fun.steps[0].v} reached connected.`:"")));
   const g1=el("div","grid2");
-  const c1=el("div");c1.innerHTML=`<div class="panel-t">New-student funnel (1st → connected)</div><div class="panel-s">Step = distinct student-group check-ins, capped at 4+.</div>`;
-  c1.appendChild(funnel(d.funnel));g1.appendChild(c1);
-  const c2=el("div");c2.innerHTML=`<div class="panel-t">Students at 2nd check-in (330)</div><div class="panel-s">Name → opens Rock profile.</div>`;
-  c2.appendChild(detailTable(d.detail));g1.appendChild(c2);
-  root.appendChild(g1);
+  const c1=el("div");c1.innerHTML=`<div class="panel-t">New-student funnel (1st → connected)</div><div class="panel-s">Step = distinct student-group check-ins, capped at 4+. Click a bar.</div>`;
+  c1.appendChild(funnelChart(fun.steps,(k)=>{state.step=k;renderStudent();}));
+  g1.appendChild(c1);
+  const stepName=fun.steps[state.step-1].s, stepCount=fun.steps[state.step-1].v;
+  const c2=el("div");c2.innerHTML=`<div class="panel-t">Students at ${stepName} (${stepCount})</div><div class="panel-s">Reached this step. Name → opens Rock profile (when wired).</div>`;
+  c2.appendChild(detailTable(detailRows(fun.rows,state.step)));
+  g1.appendChild(c2);root.appendChild(g1);
+
   // 2 attendance
   root.appendChild(section("2","STUDENT ATTENDANCE AS % OF TOTAL ATTENDANCE",
-    "Average over the selected range. Student avg ÷ total campus attendance."));
+    "Average over the selected range. Student check-ins ÷ total campus attendance."));
   const g2=el("div","grid2");
-  const a1=el("div");a1.innerHTML=`<div class="panel-t">Student avg as % of total attendance, by campus</div><div class="panel-s">Date range sets the averaging window. Tooltip shows both numbers.</div>`;
-  a1.appendChild(rankedBars(d.attendance.vals,SHORT,true,d.attendance.avg,d.attendance.goal,"goal 8%",v=>v.toFixed(1)+"%"));
+  const a1=el("div");a1.innerHTML=`<div class="panel-t">Student avg as % of total attendance, by campus</div><div class="panel-s">Date range sets the window; campus/area filters apply.</div>`;
+  a1.appendChild(rankedBars(att.per,true,att.church,GOAL.attendance,"goal 8%",v=>v.toFixed(1)+"%"));
   g2.appendChild(a1);
-  const a2=el("div");a2.innerHTML=`<div class="panel-t">Church-wide trend (weekly)</div><div class="panel-s">${d.attendance.readout}</div>`+
-    lineChart(["Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May"],[{v:d.attendance.trend}],9.5,d.attendance.goal,"goal 8%");
+  const tr=attendanceTrend();
+  const a2=el("div");a2.innerHTML=`<div class="panel-t">Church-wide trend (weekly)</div><div class="panel-s">Current: ${att.church.toFixed(1)}% of total attendance</div>`+
+    lineChart(tr.labels,[{v:tr.pts}],Math.max(10,GOAL.attendance+2),GOAL.attendance,"goal 8%");
   g2.appendChild(a2);root.appendChild(g2);
+
   // 3 & 4
   const g34=el("div","grid2");
-  const b=el("div");b.innerHTML=`<div class="section" style="margin-top:22px"><span class="snum">3</span><span class="stitle">BAPTISMS NOT IN A SMALL GROUP</span><hr><div class="take">54% of baptized 11-18 aren't in an active group.</div></div>
+  const b=el("div");b.innerHTML=`<div class="section" style="margin-top:22px"><span class="snum">3</span><span class="stitle">BAPTISMS NOT IN A SMALL GROUP</span><hr><div class="take">${Math.round(bap.church)}% of baptized 11-18 aren't in an active group.</div></div>
     <div class="panel-t" style="margin-top:12px">Baptized 11-18, % NOT on an active roster</div>`;
-  b.appendChild(rankedBars(d.baptism.vals,SHORT,false,d.baptism.avg,d.baptism.avg,"avg 54%",v=>Math.round(v)+"%",d.baptism.ann));
+  b.appendChild(rankedBars(bap.per,false,bap.church,bap.church,`avg ${Math.round(bap.church)}%`,v=>Math.round(v)+"%",bap.ann));
   b.appendChild(el("div",null,`<div style="color:var(--muted);font-size:11px;margin-top:8px">Label: not-connected / total baptized in range.</div>`));
   g34.appendChild(b);
-  const s=el("div");s.innerHTML=`<div class="section" style="margin-top:22px"><span class="snum">4</span><span class="stitle">STUDENTS SERVING</span><hr><div class="take">18% of attending students serve.</div></div>
+  const s=el("div");s.innerHTML=`<div class="section" style="margin-top:22px"><span class="snum">4</span><span class="stitle">STUDENTS SERVING</span><hr><div class="take">${Math.round(serv.church)}% of attending students serve (avg week).</div></div>
     <div class="panel-t" style="margin-top:12px">Students serving, % of students attending</div>`;
-  s.appendChild(rankedBars(d.serving.vals,SHORT,true,d.serving.avg,d.serving.goal,"goal 50%",v=>Math.round(v)+"%"));
+  s.appendChild(rankedBars(serv.per,true,serv.church,GOAL.serving,"goal 50%",v=>Math.round(v)+"%"));
   g34.appendChild(s);root.appendChild(g34);
 }
-function renderLeader(d){
+
+function renderLeader(){
   const root=document.getElementById("leader");root.innerHTML="";
-  root.appendChild(el("div","scard-head","THE SCORECARD — church-wide, selected range vs prior"));
-  root.appendChild(cards(d.cards_leader,true));
+  const ret=mRetention(), ratio=mRatio(), aim3=mAim3();
+  const ratioD=withPrior(mRatio), aim3D=withPrior(mAim3);
+  root.appendChild(el("div","scard-head","THE SCORECARD — church-wide, selected range vs prior period"));
+  const cg=el("div","cards three");
+  cg.appendChild(cardTile("LEADER RETENTION (current trimester)",Math.round(ret.church)+"%",null,true,"vs church avg"));
+  cg.appendChild(cardTile("STUDENTS PER LEADER (avg week)",ratio.church.toFixed(1)+" : 1",ratioD.prior?ratio.church-ratioD.prior.church:null,ratioD.prior?ratio.church<=ratioD.prior.church:true,"goal 5:1"));
+  cg.appendChild(cardTile("LEADERS AGED 18-29 (AIM3)",Math.round(aim3.church)+"%",aim3D.prior?aim3.church-aim3D.prior.church:null,aim3D.prior?aim3.church>=aim3D.prior.church:true,""));
+  root.appendChild(cg);
+
   // 5 retention
   root.appendChild(section("5","LEADER RETENTION",
     "Cohort = trimester a leader started. Triangle shows how each cohort holds; bars rank campuses a year on."));
@@ -306,136 +637,234 @@ function renderLeader(d){
   const t=el("div");
   t.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center">
     <div class="panel-t">Leader retention by start group</div>
-    <span class="toggle"><button class="on" id="tgTri">Triangle</button><button id="tgCurve">Survival curve</button></span></div>
-    <div class="panel-s">Each row = leaders who started that trimester; cells = the % of them still serving in each later trimester.</div>
+    <span class="toggle"><button class="${state.retMode==='tri'?'on':''}" id="tgTri">Triangle</button><button class="${state.retMode==='curve'?'on':''}" id="tgCurve">Survival curve</button></span></div>
+    <div class="panel-s">Each row = leaders who started that trimester; cells = the % still serving in each later trimester.</div>
     <div id="retView"></div>`;
   g5.appendChild(t);
-  const rc=el("div");rc.innerHTML=`<div class="panel-t">Retained one year on, by campus</div><div class="panel-s">Share of each campus's leaders from a year ago who are still serving now.</div>`;
-  rc.appendChild(rankedBars(d.retComp.vals,SHORT,true,d.retComp.avg,d.retComp.avg,"avg 52%",v=>Math.round(v)+"%"));
+  const rc=el("div");rc.innerHTML=`<div class="panel-t">Retained one year on, by campus</div><div class="panel-s">Share of each campus's leaders from a year ago still serving now.</div>`;
+  rc.appendChild(rankedBars(ret.per,true,ret.retMean,ret.retMean,`avg ${Math.round(ret.retMean)}%`,v=>Math.round(v)+"%"));
   g5.appendChild(rc);root.appendChild(g5);
   const retView=t.querySelector("#retView");
-  const showTri=()=>{retView.innerHTML=triangle(d.triangle);};
-  const showCurve=()=>{retView.innerHTML=`<div class="panel-s">% of each school-year cohort still serving, by trimesters since start.</div>`+
-    lineChart(d.survival.x,d.survival.series,100,null,"");};
-  showTri();
-  t.querySelector("#tgTri").onclick=()=>{t.querySelector("#tgTri").classList.add("on");t.querySelector("#tgCurve").classList.remove("on");showTri();};
-  t.querySelector("#tgCurve").onclick=()=>{t.querySelector("#tgCurve").classList.add("on");t.querySelector("#tgTri").classList.remove("on");showCurve();};
+  const showTri=()=>{retView.innerHTML=triangle(ret.M,TRIS.map(x=>x.short));};
+  const showCurve=()=>{retView.innerHTML=`<div class="panel-s">% of each cohort still serving, by trimesters since start.</div>`+
+    lineChart(["start","+1","+2","+3","+4"],ret.series,100,null,"");};
+  state.retMode==="tri"?showTri():showCurve();
+  t.querySelector("#tgTri").onclick=()=>{state.retMode="tri";renderLeader();};
+  t.querySelector("#tgCurve").onclick=()=>{state.retMode="curve";renderLeader();};
+
   // 6 & 7
   const g67=el("div","grid2");
   const r=el("div");r.innerHTML=`<div class="section" style="margin-top:22px"><span class="snum">6</span><span class="stitle">STUDENT-TO-LEADER RATIO</span><hr><div class="take">Average week: students ÷ leaders checked in. Goal 5:1.</div></div>
-    <div class="panel-t" style="margin-top:12px">Students per leader, average week</div><div class="panel-s">Avg weekly students ÷ avg weekly leaders over the range.</div>`;
-  r.appendChild(rankedBars(d.ratio.vals,SHORT,false,d.ratio.avg,d.ratio.goal,"goal 5:1",v=>v.toFixed(1)+" : 1"));
+    <div class="panel-t" style="margin-top:12px">Students per leader, average week</div><div class="panel-s">Total student check-ins ÷ total leader check-ins over the range.</div>`;
+  r.appendChild(rankedBars(ratio.per,false,ratio.church,GOAL.ratio,"goal 5:1",v=>v.toFixed(1)+" : 1"));
   g67.appendChild(r);
-  const a=el("div");a.innerHTML=`<div class="section" style="margin-top:22px"><span class="snum">7</span><span class="stitle">AIM3 — LEADERS AGED 18-29</span><hr><div class="take">20% of leaders are 18-29.</div></div>
-    <div class="panel-t" style="margin-top:12px">Leaders aged 18-29, % of leaders</div><div class="panel-s">Age at check-in 18-29. Label: n of total.</div>`;
-  a.appendChild(rankedBars(d.aim3.vals,SHORT,true,d.aim3.avg,d.aim3.avg,"avg 20%",v=>Math.round(v)+"%",d.aim3.ann));
+  const a=el("div");a.innerHTML=`<div class="section" style="margin-top:22px"><span class="snum">7</span><span class="stitle">AIM3 — LEADERS AGED 18-29</span><hr><div class="take">${Math.round(aim3.church)}% of leaders are 18-29 (avg week).</div></div>
+    <div class="panel-t" style="margin-top:12px">Leaders aged 18-29, % of leaders</div><div class="panel-s">Age at check-in 18-29.</div>`;
+  a.appendChild(rankedBars(aim3.per,true,aim3.church,aim3.church,`avg ${Math.round(aim3.church)}%`,v=>Math.round(v)+"%"));
   g67.appendChild(a);root.appendChild(g67);
 }
-function renderAll(d){renderStudent(d);renderLeader(d);}
+function renderAll(){renderStudent();renderLeader();}
 
-/* ---------- tabs ---------- */
-document.querySelectorAll(".tab").forEach(tb=>tb.onclick=()=>{
-  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));tb.classList.add("active");
-  const p=tb.dataset.page;
-  document.getElementById("student").style.display=p==="student"?"":"none";
-  document.getElementById("leader").style.display=p==="leader"?"":"none";
-  document.getElementById("pageTitle").textContent=p==="student"?"Student Vitals":"Leader Vitals";
-});
+/* ============================================================
+   CONTROLS
+   ============================================================ */
+function campusLabel(){
+  const n=state.campuses.size;
+  return n===NC?"All":n===0?"None":n+" selected";
+}
+function dateLabel(){
+  const presets={"52":"Last 52 weeks","sy":"This school year ("+LASTSY+")","12":"Last 12 weeks"};
+  if(state.preset in presets)return presets[state.preset];
+  const a=WEEKS.find(w=>w.i===state.from),b=WEEKS.find(w=>w.i===state.to);
+  return a.label+" – "+b.label;
+}
+function buildCampusPanel(){
+  const p=document.getElementById("campusPanel");
+  p.innerHTML=`<div class="ddmini"><span id="cAll">Select all</span><span id="cNone">Clear</span></div><div class="ddsep"></div>`;
+  FULL.forEach((f,i)=>{
+    const row=el("label","ddrow",`<input type="checkbox" ${state.campuses.has(i)?"checked":""}><span>${f}</span>`);
+    row.querySelector("input").onchange=(e)=>{e.target.checked?state.campuses.add(i):state.campuses.delete(i);
+      document.getElementById("campusLbl").textContent=campusLabel();renderAll();};
+    p.appendChild(row);
+  });
+  p.querySelector("#cAll").onclick=()=>{FULL.forEach((_,i)=>state.campuses.add(i));refreshControls();renderAll();};
+  p.querySelector("#cNone").onclick=()=>{state.campuses.clear();refreshControls();renderAll();};
+}
+function applyPreset(pr){
+  state.preset=pr;
+  if(pr==="52"){state.from=INSESS[0].i;state.to=INSESS[INSESS.length-1].i;}
+  else if(pr==="sy"){const sy=INSESS.filter(w=>w.schoolYear===LASTSY);state.from=sy[0].i;state.to=sy[sy.length-1].i;}
+  else if(pr==="12"){const last=INSESS.slice(-12);state.from=last[0].i;state.to=last[last.length-1].i;}
+}
+function buildDatePanel(){
+  const p=document.getElementById("datePanel");
+  const presets=[["52","Last 52 weeks"],["sy","This school year"],["12","Last 12 weeks"],["custom","Custom range"]];
+  p.innerHTML=presets.map(([k,l])=>`<div class="ddrow" data-pr="${k}"><input type="radio" name="pr" ${state.preset===k?"checked":""}><span>${l}</span></div>`).join("")+
+    `<div class="ddsep"></div>
+     <div class="custrow">From <select id="cFrom"></select></div>
+     <div class="custrow">To <select id="cTo"></select></div>`;
+  const opts=INSESS.map(w=>`<option value="${w.i}">${w.label}</option>`).join("");
+  const cf=p.querySelector("#cFrom"),ct=p.querySelector("#cTo");
+  cf.innerHTML=opts;ct.innerHTML=opts;cf.value=state.from;ct.value=state.to;
+  p.querySelectorAll(".ddrow").forEach(r=>r.onclick=()=>{
+    const pr=r.dataset.pr;
+    if(pr==="custom"){state.preset="custom";}
+    else{applyPreset(pr);}
+    refreshControls();renderAll();
+  });
+  cf.onchange=()=>{state.preset="custom";state.from=+cf.value;if(state.to<state.from)state.to=state.from;refreshControls();renderAll();};
+  ct.onchange=()=>{state.preset="custom";state.to=+ct.value;if(state.from>state.to)state.from=state.to;refreshControls();renderAll();};
+}
+function refreshControls(){
+  document.getElementById("campusLbl").textContent=campusLabel();
+  document.getElementById("dateLbl").textContent=dateLabel();
+  buildCampusPanel();buildDatePanel();
+  document.querySelectorAll("#areaSeg button").forEach(b=>b.classList.toggle("on",b.dataset.area===state.area));
+}
+function wireControls(){
+  document.querySelectorAll(".ddbtn").forEach(btn=>btn.onclick=(e)=>{
+    e.stopPropagation();
+    const id=btn.dataset.dd, dd=document.getElementById(id), was=dd.classList.contains("open");
+    document.querySelectorAll(".dd").forEach(x=>x.classList.remove("open"));
+    if(!was)dd.classList.add("open");
+  });
+  document.querySelectorAll(".ddpanel").forEach(p=>p.onclick=(e)=>e.stopPropagation());
+  document.body.onclick=()=>document.querySelectorAll(".dd").forEach(x=>x.classList.remove("open"));
+  document.querySelectorAll("#areaSeg button").forEach(b=>b.onclick=()=>{state.area=b.dataset.area;refreshControls();renderAll();});
+  document.querySelectorAll(".tab").forEach(tb=>tb.onclick=()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));tb.classList.add("active");
+    state.page=tb.dataset.page;
+    document.getElementById("student").style.display=state.page==="student"?"":"none";
+    document.getElementById("leader").style.display=state.page==="leader"?"":"none";
+    document.getElementById("pageTitle").textContent=state.page==="student"?"Student Vitals":"Leader Vitals";
+  });
+}
 
 /* ============================================================
    LIVE DATA BINDING (Tableau Extensions API)
-   Map each metric to a worksheet on the dashboard + its columns.
-   Build one worksheet per metric from the SQL views, then fill
-   this map with the worksheet names and field names.
+   Fills the same RAW feeds from finer-grain worksheets, then
+   everything above recomputes identically. Sheet/field names
+   are in FEED_MAP; the DATA CHECK panel reports what matched.
    ============================================================ */
-const WORKSHEET_MAP={
-  attendance:{sheet:"SM_AttendanceByCampus", campus:"CampusName", value:"Pct of Total"},
-  baptism:   {sheet:"SM_BaptismByCampus",    campus:"CampusName", value:"Pct Not Connected"},
-  serving:   {sheet:"SM_ServingByCampus",    campus:"CampusName", value:"Pct Serving"},
-  ratio:     {sheet:"SM_RatioByCampus",      campus:"CampusName", value:"Students Per Leader"},
-  aim3:      {sheet:"SM_AIM3ByCampus",       campus:"CampusName", value:"Pct 18-29"}
-  // funnel, detail, attendance-trend, retention triangle/curve: read from their own sheets the same way.
+const FEED_MAP={
+  weekly:{sheet:"SM_WeeklyFeed"},    // CampusName, WeekStart, MinistryArea, StudentCheckins, TotalCampusAttendance, Students, Leaders, Leaders1829, LeadersTotal
+  serving:{sheet:"SM_ServingFeed"},  // CampusName, MinistryArea, SchoolYear, ServingStudents, AttendingStudents
+  baptism:{sheet:"SM_BaptismFeed"},  // CampusName, BaptismDate, AgeAtBaptism, IsConnected
+  funnel:{sheet:"SM_FunnelFeed"},    // StudentName, CampusName, Grade, FirstCheckinDate, CheckinCount, LastVisitDate, DaysSince
+  leaders:{sheet:"SM_LeaderFeed"}    // CampusName, CohortTrimesterIndex, TrimesterIndex (one row per leader-trimester) OR PersonId + active trimesters
 };
-/* ---- tolerant campus matching ---------------------------------------
-   Live rows may come back as full names ("Bullitt County"), short names
-   ("Bullitt Co."), or with extra words/spacing. Normalize to a slug and
-   map both the FULL and SHORT spellings (and a few partials) to the same
-   slot so order never depends on an exact string. ------------------- */
 const norm=s=>String(s==null?"":s).toLowerCase().replace(/[^a-z0-9]/g,"");
-const CAMPUS_IDX={};
-FULL.forEach((f,i)=>{CAMPUS_IDX[norm(f)]=i;});
-SHORT.forEach((s,i)=>{CAMPUS_IDX[norm(s)]=i;});
-function campusIndex(raw){
-  const n=norm(raw);
-  if(n==="") return -1;
-  if(n in CAMPUS_IDX) return CAMPUS_IDX[n];
-  for(const k in CAMPUS_IDX){ if(n.startsWith(k)||k.startsWith(n)) return CAMPUS_IDX[k]; }
-  return -1;
-}
-function findSheet(name){
-  const ws=tableau.extensions.dashboardContent.dashboard.worksheets;
-  return ws.find(w=>w.name===name) || ws.find(w=>norm(w.name)===norm(name)) || null;
+const CAMPUS_IDX={};FULL.forEach((f,i)=>CAMPUS_IDX[norm(f)]=i);SHORT.forEach((s,i)=>CAMPUS_IDX[norm(s)]=i);
+function campusIndex(raw){const n=norm(raw);if(n in CAMPUS_IDX)return CAMPUS_IDX[n];for(const k in CAMPUS_IDX){if(n&&(n.startsWith(k)||k.startsWith(n)))return CAMPUS_IDX[k];}return -1;}
+function findSheet(name){const ws=tableau.extensions.dashboardContent.dashboard.worksheets;return ws.find(w=>w.name===name)||ws.find(w=>norm(w.name)===norm(name))||null;}
+async function readSheet(name){
+  const ws=findSheet(name); if(!ws) return {err:"sheet not on this dashboard",rows:[],cols:[]};
+  const dt=await ws.getSummaryDataAsync({maxRows:50000});
+  const cols=dt.columns.map(c=>({name:c.fieldName,type:c.dataType,idx:c.index!=null?c.index:dt.columns.indexOf(c)}));
+  const get=(r,names)=>{for(const nm of names){const c=cols.find(c=>norm(c.name)===norm(nm)||norm(c.name).includes(norm(nm)));if(c)return r[c.idx].value!=null?r[c.idx].value:r[c.idx].formattedValue;}return undefined;};
+  const rows=dt.data.map(r=>({_r:r,get:(names)=>get(r,names)}));
+  return {rows,cols,colNames:cols.map(c=>c.name+":"+c.type).join(", ")};
 }
 async function loadLive(){
-  const model=JSON.parse(JSON.stringify(SAMPLE));   // start from sample, overwrite what we read
   const dbg=[];
-  for(const key of ["attendance","baptism","serving","ratio","aim3"]){
-    const m=WORKSHEET_MAP[key];
-    try{
-      const ws=findSheet(m.sheet);
-      if(!ws){ dbg.push({key,sheet:m.sheet,err:"sheet not on this dashboard"}); continue; }
-      const dt=await ws.getSummaryDataAsync({maxRows:5000});
-      const cols=dt.columns.map(c=>({name:c.fieldName,type:c.dataType}));
-      let ci=cols.findIndex(c=>norm(c.name)===norm(m.campus));
-      if(ci<0) ci=cols.findIndex(c=>c.type==="string");
-      let vi=cols.findIndex(c=>norm(c.name)===norm(m.value));
-      if(vi<0) vi=cols.findIndex(c=>c.type==="float"||c.type==="int"||c.type==="integer");
-      const vals=model[key].vals.slice();
-      const seen=[]; let matched=0;
-      dt.data.forEach(r=>{
-        const craw=ci>=0 ? r[ci].formattedValue : "";
-        const vraw=vi>=0 ? r[vi].formattedValue : "";
-        const idx=campusIndex(craw);
-        const num=parseFloat(String(vraw).replace(/[^0-9.\-]/g,""));
-        seen.push(craw+" = "+vraw+(idx<0?"  [no match]":""));
-        if(idx>=0 && isFinite(num)){ vals[idx]=num; matched++; }
+  // weekly
+  try{
+    const w=await readSheet(FEED_MAP.weekly.sheet);
+    if(w.err){dbg.push({sheet:FEED_MAP.weekly.sheet,err:w.err});}
+    else{
+      const out=[];let matched=0;const seen=[];
+      w.rows.forEach(r=>{
+        const ci=campusIndex(r.get(["CampusName","Campus"]));
+        const draw=r.get(["WeekStart","Week","SundayDate","Date"]);
+        const wk=weekIndexFromDate(draw);
+        const area=String(r.get(["MinistryArea","Area"])||"HSM").toUpperCase().includes("MSM")?"MSM":"HSM";
+        const num=(names)=>{const v=r.get(names);const f=parseFloat(String(v).replace(/[^0-9.\-]/g,""));return isFinite(f)?f:0;};
+        if(ci>=0&&wk>=0){out.push({ci,w:wk,area,sc:num(["StudentCheckins"]),ta:num(["TotalCampusAttendance","TotalAttendance"]),
+          att:num(["AttendingStudents","AttendStudents"]),students:num(["Students"]),
+          leaders:num(["Leaders"]),ltot:num(["LeadersTotal"]),l1829:num(["Leaders1829","Leaders18to29"])});matched++;}
+        if(seen.length<6)seen.push((r.get(["CampusName","Campus"])||"?")+" / "+draw);
       });
-      model[key].vals=vals;
-      dbg.push({key,sheet:m.sheet,rows:dt.data.length,matched,
-        campusCol:ci>=0?cols[ci].name:"(none)", valueCol:vi>=0?cols[vi].name:"(none)",
-        cols:cols.map(c=>c.name+":"+c.type).join(", "), seen});
-    }catch(e){ dbg.push({key,sheet:m.sheet,err:e.message}); }
-  }
-  renderAll(model);
-  renderDebug(dbg);
+      if(matched){RAW.weekly=out;}
+      dbg.push({sheet:FEED_MAP.weekly.sheet,rows:w.rows.length,matched,cols:w.colNames,seen});
+    }
+  }catch(e){dbg.push({sheet:FEED_MAP.weekly.sheet,err:e.message});}
+  // serving (per campus x area x school year)
+  try{
+    const sv=await readSheet(FEED_MAP.serving.sheet);
+    if(sv.err)dbg.push({sheet:FEED_MAP.serving.sheet,err:sv.err});
+    else{const out=[];let matched=0;sv.rows.forEach(r=>{const ci=campusIndex(r.get(["CampusName","Campus"]));
+      const area=String(r.get(["MinistryArea","Area"])||"HSM").toUpperCase().includes("MSM")?"MSM":"HSM";
+      const sy=String(r.get(["SchoolYear","SY"])||"");
+      const serv=parseFloat(String(r.get(["ServingStudents"])).replace(/[^0-9.\-]/g,""));
+      const att=parseFloat(String(r.get(["AttendingStudents","Students","TotalStudents"])).replace(/[^0-9.\-]/g,""));
+      if(ci>=0&&sy){out.push({ci,area,sy,serv:isFinite(serv)?serv:0,att:isFinite(att)?att:0});matched++;}});
+      if(matched)RAW.serving=out;dbg.push({sheet:FEED_MAP.serving.sheet,rows:sv.rows.length,matched,cols:sv.colNames});}
+  }catch(e){dbg.push({sheet:FEED_MAP.serving.sheet,err:e.message});}
+  // baptism
+  try{
+    const b=await readSheet(FEED_MAP.baptism.sheet);
+    if(b.err)dbg.push({sheet:FEED_MAP.baptism.sheet,err:b.err});
+    else{const out=[];let matched=0;b.rows.forEach(r=>{const ci=campusIndex(r.get(["CampusName","Campus"]));
+      const d=parseDate(r.get(["BaptismDate","Date"]));const age=parseFloat(r.get(["AgeAtBaptism","Age"]));
+      const conn=/^(1|true|yes)/i.test(String(r.get(["IsConnected","Connected"])))?1:0;
+      if(ci>=0&&d){out.push({ci,date:d,age:isFinite(age)?age:14,connected:conn});matched++;}});
+      if(matched)RAW.baptism=out;dbg.push({sheet:FEED_MAP.baptism.sheet,rows:b.rows.length,matched,cols:b.colNames});}
+  }catch(e){dbg.push({sheet:FEED_MAP.baptism.sheet,err:e.message});}
+  // funnel
+  try{
+    const f=await readSheet(FEED_MAP.funnel.sheet);
+    if(f.err)dbg.push({sheet:FEED_MAP.funnel.sheet,err:f.err});
+    else{const out=[];let matched=0;f.rows.forEach(r=>{const ci=campusIndex(r.get(["CampusName","Campus"]));
+      const fd=parseDate(r.get(["FirstCheckinDate","FirstDate"]));const ld=parseDate(r.get(["LastVisitDate","LastDate"]))||fd;
+      const cc=parseFloat(r.get(["CheckinCount","Checkins"]));const days=parseFloat(r.get(["DaysSince","Days"]));
+      if(ci>=0&&fd){out.push({ci,name:String(r.get(["StudentName","Name"])||"Student"),grade:parseFloat(r.get(["Grade"]))||0,
+        firstDate:fd,checkins:isFinite(cc)?Math.min(4,cc):1,lastDate:ld,days:isFinite(days)?days:Math.round((Date.now()-ld)/86400000)});matched++;}});
+      if(matched)RAW.funnel=out;dbg.push({sheet:FEED_MAP.funnel.sheet,rows:f.rows.length,matched,cols:f.colNames});}
+  }catch(e){dbg.push({sheet:FEED_MAP.funnel.sheet,err:e.message});}
+  // leaders (one row per leader-trimester; we fold into active sets)
+  try{
+    const L=await readSheet(FEED_MAP.leaders.sheet);
+    if(L.err)dbg.push({sheet:FEED_MAP.leaders.sheet,err:L.err});
+    else{const map={};let matched=0;L.rows.forEach(r=>{const ci=campusIndex(r.get(["CampusName","Campus"]));
+      const pid=String(r.get(["PersonId","PersonID","Leader"])||"");const coh=parseFloat(r.get(["CohortTrimesterIndex","FirstTrimesterIndex","Cohort"]));
+      const tri=parseFloat(r.get(["TrimesterIndex","Trimester"]));const age=parseFloat(r.get(["AgeAtCheckin","Age"]));
+      if(ci>=0&&isFinite(coh)){const key=pid||ci+"|"+coh+"|"+matched;const o=map[key]||(map[key]={ci,cohort:coh,active:new Set(),age:isFinite(age)?age:25});
+        if(isFinite(tri))o.active.add(tri);o.active.add(coh);matched++;}});
+      const arr=Object.values(map);if(arr.length)RAW.leaders=arr;dbg.push({sheet:FEED_MAP.leaders.sheet,rows:L.rows.length,matched,leaders:arr.length,cols:L.colNames});}
+  }catch(e){dbg.push({sheet:FEED_MAP.leaders.sheet,err:e.message});}
+  renderAll();renderDebug(dbg);
 }
+function parseDate(v){if(v==null)return null;if(v instanceof Date)return v;const d=new Date(v);return isNaN(d)?null:d;}
+function weekIndexFromDate(v){const d=parseDate(v);if(!d)return -1;let best=-1,bd=1e15;WEEKS.forEach(w=>{const diff=Math.abs(w.date-d);if(diff<bd){bd=diff;best=w.i;}});return bd<=4*86400000?best:-1;}
 function renderDebug(dbg){
-  const box=document.getElementById("dbg"); if(!box) return;
-  const bad=dbg.some(d=>d.err || d.matched===0);
+  const box=document.getElementById("dbg");if(!box)return;
+  const bad=dbg.some(d=>d.err||d.matched===0);
   const rows=dbg.map(d=>{
-    if(d.err) return `<div style="color:#b23b3b"><b>${d.sheet}</b> — ERROR: ${d.err}</div>`;
+    if(d.err)return `<div style="color:#b23b3b"><b>${d.sheet}</b> — ERROR: ${d.err}</div>`;
     const ok=d.matched>0;
-    return `<div style="margin:6px 0">
-      <div><b>${d.sheet}</b> — ${d.rows} rows, <span style="color:${ok?'#1b7f4f':'#b23b3b'}">${d.matched} matched</span>
-       | campus col: <code>${d.campusCol}</code> | value col: <code>${d.valueCol}</code></div>
-      <div style="color:#52514e;font-size:10.5px">columns: ${d.cols}</div>
-      <div style="color:#52514e;font-size:10.5px">${d.seen.slice(0,14).join(" &nbsp;·&nbsp; ")}</div>
-    </div>`;
+    return `<div style="margin:6px 0"><div><b>${d.sheet}</b> — ${d.rows} rows, <span style="color:${ok?'#1b7f4f':'#b23b3b'}">${d.matched} matched</span>${d.leaders?` (${d.leaders} leaders)`:""}</div>
+      <div style="color:#52514e;font-size:10.5px">columns: ${d.cols||""}</div>
+      ${d.seen?`<div style="color:#52514e;font-size:10.5px">${d.seen.join(" &nbsp;·&nbsp; ")}</div>`:""}</div>`;
   }).join("");
-  box.innerHTML=
-    `<details ${bad?"open":""} style="background:${bad?'#fff4ec':'#eef7f1'};border:1px solid ${bad?'#eb6834':'#1baf7a'};
-       border-radius:8px;padding:8px 12px;margin:12px 0;font-size:11.5px">
-      <summary style="cursor:pointer;font-weight:700;color:${bad?'#b23b3b':'#1b7f4f'}">
-        DATA CHECK — ${bad?'some sheets not matching, tap to see detail (screenshot this)':'all five sheets reading live'}</summary>
-      <div style="margin-top:8px">${rows}</div>
-    </details>`;
+  box.innerHTML=`<details ${bad?"open":""} style="background:${bad?'#fff4ec':'#eef7f1'};border:1px solid ${bad?'#eb6834':'#1baf7a'};border-radius:8px;padding:8px 12px;margin:12px 0;font-size:11.5px">
+    <summary style="cursor:pointer;font-weight:700;color:${bad?'#b23b3b':'#1b7f4f'}">DATA CHECK — ${bad?'some feeds not matching, tap for detail (screenshot this)':'all feeds reading live'}</summary>
+    <div style="margin-top:8px">${rows}</div></details>`;
 }
+
+/* ============================================================
+   INIT
+   ============================================================ */
 async function init(){
+  genSample();            // sample feeds so controls are live in preview
+  refreshControls();wireControls();renderAll();
   if(window.tableau && tableau.extensions){
-    try{ await tableau.extensions.initializeAsync(); await loadLive(); return; }
-    catch(e){ console.warn("Extensions init failed; showing sample.",e); }
+    try{ await tableau.extensions.initializeAsync(); await loadLive();
+      // re-render on any native filter/parameter change too
+      tableau.extensions.dashboardContent.dashboard.worksheets.forEach(ws=>{
+        try{ws.addEventListener(tableau.TableauEventType.FilterChanged,()=>loadLive());}catch(e){}
+      });
+    }catch(e){ console.warn("Extensions init failed; sample shown.",e); }
   }
-  renderAll(SAMPLE);   // preview / outside Tableau
 }
 init();
 </script>

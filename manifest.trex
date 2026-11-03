@@ -1,21 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest manifest-version="0.1" xmlns="http://wwww.tableau.com/xml/extension-manifest">
-  <dashboard-extension id="org.secc.studentvitals" extension-version="1.0.0">
+<manifest manifest-version="0.1" xmlns="http://www.tableau.com/xml/extension_manifest">
+  <dashboard-extension id="com.secc.studentvitals" extension-version="1.0.0">
     <default-locale>en_US</default-locale>
-    <name resource-id="name"/>
-    <description>Student Vitals / Leader Vitals leadership scorecard for SECC student ministry.</description>
-    <author name="SECC Data" email="ageorge@secc.org" organization="Southeast Christian Church" website="https://www.secc.org"/>
-    <min-api-version>1.4</min-api-version>
+    <name>Student Vitals</name>
+    <description>Student Vitals / Leader Vitals leadership scorecard for SECC student ministry</description>
+    <author name="SECC Analytics" email="analytics@example.org" organization="SECC" website="https://example.org"/>
+    <min-api-version>1.10</min-api-version>
     <source-location>
       <url>https://andrew-c-george.github.io/student-vitals-extension/index.html</url>
     </source-location>
-    <permissions>
-      <permission>full data</permission>
-    </permissions>
+    <icon>iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAANElEQVR42mOQ8++nKWIYtWA4WPAfFYxaMGoBGQaNWjBqAeUGjVowasGoBYPRgtGG13CzAAA9gdE8QtDv3gAAAABJRU5ErkJggg==</icon>
   </dashboard-extension>
-  <resources>
-    <resource id="name">
-      <text locale="en_US">Student Vitals</text>
-    </resource>
-  </resources>
 </manifest>
