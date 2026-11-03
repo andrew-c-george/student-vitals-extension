@@ -85,17 +85,17 @@
     color:var(--goal);white-space:nowrap;background:var(--surf);padding:0 4px}
   .empty{color:var(--muted);font-size:12px;font-style:italic;padding:14px 0}
   /* funnel */
-  .funnel{padding-top:6px}
-  .funnel .fbar{display:grid;grid-template-columns:128px 1fr auto;align-items:center;gap:10px;margin:0;padding:9px 0;cursor:pointer;border-radius:6px}
+  .funnel{padding-top:8px}
+  .funnel .fbar{display:grid;grid-template-columns:128px 1fr auto;align-items:center;gap:10px;margin:0;padding:12px 6px;cursor:pointer;border-radius:6px}
   .funnel .fbar:hover{background:var(--panel)}
   .funnel .fbar .fnm{color:var(--sec);text-align:right;font-size:12.5px}
-  .funnel .ftrack{height:32px;background:#fff;border-bottom:1px solid var(--grid)}
-  .funnel .ffill{height:32px;border-radius:0 3px 3px 0;transition:opacity .12s}
+  .funnel .ftrack{height:38px;background:#fff;border-bottom:1px solid var(--grid)}
+  .funnel .ffill{height:38px;border-radius:0 3px 3px 0;transition:opacity .12s}
   .funnel .fv{font-weight:800;font-size:14px}
   .funnel .fbar.sel{background:#eef4fd}
   .funnel .fbar.sel .fnm{color:var(--blue);font-weight:800}
   .funnel .fbar.dim .ffill{opacity:.4}
-  .hold{font-size:10.5px;color:var(--muted);margin:0 0 0 138px;padding:2px 0}
+  .hold{font-size:10.5px;color:var(--muted);margin:0 0 0 144px;padding:3px 0}
   /* detail table */
   table.detail{width:100%;border-collapse:collapse;font-size:12px}
   table.detail th{text-align:left;color:var(--sec);font-weight:700;font-size:11px;padding:4px 6px;border-bottom:1px solid var(--grid)}
@@ -173,6 +173,7 @@ const AHEAD="#1baf7a",BEHIND="#eb6834";
 const GOAL={attendance:8,serving:50,ratio:5};   // director-stated goals; others compare vs church avg
 const ROCK_BASE="https://rock.secc.org";   // links student names to their Rock profile: ROCK_BASE/person/<PersonId>
 const VERSION="2026-11-03c";               // shown in DATA CHECK so we can confirm the live file
+const PROD=true;                           // true hides the DATA CHECK panel for the production build
 
 /* ---------- tiny helpers ---------- */
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
@@ -875,6 +876,7 @@ function parseDate(v){if(v==null)return null;if(v instanceof Date)return v;const
 function weekIndexFromDate(v){const d=parseDate(v);if(!d)return -1;let best=-1,bd=1e15;WEEKS.forEach(w=>{const diff=Math.abs(w.date-d);if(diff<bd){bd=diff;best=w.i;}});return bd<=4*86400000?best:-1;}
 function renderDebug(dbg){
   const box=document.getElementById("dbg");if(!box)return;
+  if(PROD){box.innerHTML="";return;}   // production build: no data-check panel
   const bad=dbg.some(d=>d.err||d.matched===0);
   const rows=dbg.map(d=>{
     if(d.err)return `<div style="color:#b23b3b"><b>${d.sheet}</b> — ERROR: ${d.err}</div>`;
