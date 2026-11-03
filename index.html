@@ -171,7 +171,7 @@ const FULL=["Blankenbaker","Bullitt County","Crestwood","Indiana","Elizabethtown
 const NC=FULL.length;
 const AHEAD="#1baf7a",BEHIND="#eb6834";
 const GOAL={attendance:8,serving:50,ratio:5};   // director-stated goals; others compare vs church avg
-const ROCK_BASE="";   // set to your Rock base URL (e.g. https://rock.secc.org) to link student names to their Rock profile
+const ROCK_BASE="https://rock.secc.org";   // links student names to their Rock profile: ROCK_BASE/person/<PersonId>
 
 /* ---------- tiny helpers ---------- */
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
@@ -523,7 +523,7 @@ function detailTable(rows){
   const t=el("table","detail");
   t.innerHTML="<tr><th>Student</th><th>Campus</th><th>Grade</th><th>Last visit</th><th>Days since</th></tr>"+
     (rows.length?rows.map(r=>{
-      const nm=(ROCK_BASE&&r[5])?`<a href="${ROCK_BASE}/Person/${r[5]}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">${r[0]}</a>`:r[0];
+      const nm=(ROCK_BASE&&r[5])?`<a href="${ROCK_BASE}/person/${r[5]}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">${r[0]}</a>`:r[0];
       return `<tr><td class="nm">${nm}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`;
     }).join("")
       :`<tr><td colspan="5" style="color:var(--muted);font-style:italic">No students in this step for the current filters.</td></tr>`);
