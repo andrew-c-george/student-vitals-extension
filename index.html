@@ -74,25 +74,28 @@
   .panel-s{color:var(--muted);font-size:11px;margin-bottom:10px}
   /* ranked bars with one continuous reference line */
   .rb{position:relative;margin-top:22px}
-  .rbrow{display:grid;grid-template-columns:96px 1fr 120px;align-items:center;gap:8px;font-size:12px;height:22px}
+  .rbrow{display:grid;grid-template-columns:96px 1fr 150px;align-items:center;gap:8px;font-size:12px;height:22px}
   .rbrow .nm{color:var(--sec);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .rbrow .vv{font-weight:700;font-size:12px;white-space:nowrap;text-align:left}
   .track{position:relative;height:17px;background:#fff;border-bottom:1px solid var(--grid)}
   .fill{height:17px;border-radius:0 2px 2px 0}
-  .rbref{position:absolute;top:1px;bottom:2px;left:104px;right:128px;pointer-events:none}
+  .rbref{position:absolute;top:1px;bottom:2px;left:104px;right:158px;pointer-events:none}
   .rbref .ln{position:absolute;top:0;bottom:0;border-left:2px dashed var(--goal)}
   .rbref .tg{position:absolute;top:-15px;transform:translateX(-50%);font-size:9.5px;font-weight:700;
     color:var(--goal);white-space:nowrap;background:var(--surf);padding:0 4px}
   .empty{color:var(--muted);font-size:12px;font-style:italic;padding:14px 0}
   /* funnel */
-  .funnel .fbar{display:grid;grid-template-columns:120px 1fr auto;align-items:center;gap:8px;margin:7px 0;cursor:pointer}
+  .funnel{padding-top:6px}
+  .funnel .fbar{display:grid;grid-template-columns:128px 1fr auto;align-items:center;gap:10px;margin:0;padding:9px 0;cursor:pointer;border-radius:6px}
+  .funnel .fbar:hover{background:var(--panel)}
   .funnel .fbar .fnm{color:var(--sec);text-align:right;font-size:12.5px}
-  .funnel .ftrack{height:26px;background:#fff;border-bottom:1px solid var(--grid)}
-  .funnel .ffill{height:26px;border-radius:0 3px 3px 0;transition:opacity .12s}
+  .funnel .ftrack{height:32px;background:#fff;border-bottom:1px solid var(--grid)}
+  .funnel .ffill{height:32px;border-radius:0 3px 3px 0;transition:opacity .12s}
   .funnel .fv{font-weight:800;font-size:14px}
+  .funnel .fbar.sel{background:#eef4fd}
   .funnel .fbar.sel .fnm{color:var(--blue);font-weight:800}
   .funnel .fbar.dim .ffill{opacity:.4}
-  .hold{font-size:10.5px;color:var(--muted);margin:-3px 0 0 128px}
+  .hold{font-size:10.5px;color:var(--muted);margin:0 0 0 138px;padding:2px 0}
   /* detail table */
   table.detail{width:100%;border-collapse:collapse;font-size:12px}
   table.detail th{text-align:left;color:var(--sec);font-weight:700;font-size:11px;padding:4px 6px;border-bottom:1px solid var(--grid)}
@@ -168,11 +171,13 @@ const FULL=["Blankenbaker","Bullitt County","Crestwood","Indiana","Elizabethtown
 const NC=FULL.length;
 const AHEAD="#1baf7a",BEHIND="#eb6834";
 const GOAL={attendance:8,serving:50,ratio:5};   // director-stated goals; others compare vs church avg
+const ROCK_BASE="";   // set to your Rock base URL (e.g. https://rock.secc.org) to link student names to their Rock profile
 
 /* ---------- tiny helpers ---------- */
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
 const sum=a=>a.reduce((x,y)=>x+y,0);
 const mean=a=>a.length?sum(a)/a.length:0;
+const numc=n=>{n=Math.round(n||0);return n>=10000?(n/1000).toFixed(n>=100000?0:1)+"k":n.toLocaleString();};
 const fmtDate=d=>d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
 function seeded(s){return function(){s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
 
@@ -223,10 +228,10 @@ function genSample(){
   INSESS.forEach(w=>{
     for(let ci=0;ci<NC;ci++){
       const base=camStrength[ci];
+      const totalAtt=Math.round((900+ci*55)*(0.92+0.16*R()));   // campus total: SAME on both area rows (as in the real feed)
       ["HSM","MSM"].forEach(area=>{
         const scale=area==="HSM"?1:0.78;
-        const totalAtt=Math.round((900+ci*55)*(area==="HSM"?1:0.6)*(0.92+0.16*R()));
-        const sc=Math.round(totalAtt*(0.035+0.03*base)*(0.9+0.2*R())*scale);
+        const sc=Math.round(totalAtt*(0.02+0.02*base)*(0.9+0.2*R())*scale);
         const att=Math.max(8,Math.round(sc*(0.9+0.2*R())));         // distinct attending students that wk
         const leaders=Math.max(2,Math.round(att/(4.5+2.5*R())/base));
         const ltot=leaders;
@@ -273,7 +278,7 @@ function genSample(){
         const wkLater=Math.min(WEEKS.length-1,w.i+(checkins-1)*2+Math.floor(R()*2));
         const lastDate=WEEKS[wkLater].date;
         const days=Math.round((WEEKS[WEEKS.length-1].date-lastDate)/86400000);
-        RAW.funnel.push({ci,name:FIRST[Math.floor(R()*FIRST.length)]+" "+LAST[Math.floor(R()*LAST.length)],
+        RAW.funnel.push({ci,pid:100000+Math.floor(R()*900000),name:FIRST[Math.floor(R()*FIRST.length)]+" "+LAST[Math.floor(R()*LAST.length)],
           grade:6+Math.floor(R()*7),firstDate:new Date(w.date),checkins,lastDate,days});
       }
     }
@@ -352,13 +357,13 @@ function mAttendance(){
     o.sc+=r.sc;                                   // sum HSM+MSM check-ins
     o.ta=r.ta;                                    // campus total: set once (same on both area rows)
   });
-  const per={}; let N=0,D=0;
+  const per={}, ann={}; let N=0,D=0;
   selCampuses().forEach(ci=>{
     let n=0,d=0; const wk=cw[ci]||{};
     for(const w in wk){ if(wk[w].ta>0){ n+=wk[w].sc; d+=wk[w].ta; } }  // only weeks with a denominator
-    per[ci]=d?n/d*100:null; N+=n; D+=d;
+    per[ci]=d?n/d*100:null; ann[ci]=numc(n)+" / "+numc(d); N+=n; D+=d;
   });
-  return {per,church:D?N/D*100:0};
+  return {per,church:D?N/D*100:0, ann};
 }
 function selSchoolYears(){return new Set(WEEKS.filter(w=>w.i>=state.from&&w.i<=state.to).map(w=>w.schoolYear));}
 function mServing(){
@@ -366,8 +371,8 @@ function mServing(){
   const rows=RAW.serving.filter(r=>state.campuses.has(r.ci)&&areaMatch(r.area)&&sy.has(r.sy));
   const byC={};let N=0,D=0;
   rows.forEach(r=>{const o=byC[r.ci]||(byC[r.ci]={n:0,d:0});o.n+=r.serv;o.d+=r.att;N+=r.serv;D+=r.att;});
-  const per={};selCampuses().forEach(ci=>{const o=byC[ci];per[ci]=o&&o.d?o.n/o.d*100:null;});
-  return {per,church:D?N/D*100:0};
+  const per={},ann={};selCampuses().forEach(ci=>{const o=byC[ci];per[ci]=o&&o.d?o.n/o.d*100:null;ann[ci]=o?numc(o.n)+" / "+numc(o.d):"0 / 0";});
+  return {per,church:D?N/D*100:0,ann};
 }
 const mRatio     =()=>{const rows=weeklyRows();const byC={};let S=0,L=0;
   rows.forEach(r=>{const o=byC[r.ci]||(byC[r.ci]={s:0,l:0});o.s+=r.students;o.l+=r.leaders;S+=r.students;L+=r.leaders;});
@@ -394,9 +399,10 @@ function mFunnel(){
   return {rows,steps:[{s:"1st check-in",v:s[0]},{s:"2nd check-in",v:s[1]},{s:"3rd check-in",v:s[2]},{s:"Connected (4+)",v:s[3]}]};
 }
 function detailRows(funnelRows,step){
-  return funnelRows.filter(p=>p.checkins>=step)
+  const match=step>=4?(p=>p.checkins>=4):(p=>p.checkins===step);   // EXACT bucket per clicked step
+  return funnelRows.filter(match)
     .sort((a,b)=>b.lastDate-a.lastDate)
-    .map(p=>[p.name,SHORT[p.ci],String(p.grade),fmtDate(p.lastDate),String(p.days)]);
+    .map(p=>[p.name,SHORT[p.ci],String(p.grade),fmtDate(p.lastDate),String(p.days),p.pid||""]);
 }
 // leader retention
 function mRetention(){
@@ -516,7 +522,10 @@ function detailTable(rows){
   const box=el("div","detwrap");
   const t=el("table","detail");
   t.innerHTML="<tr><th>Student</th><th>Campus</th><th>Grade</th><th>Last visit</th><th>Days since</th></tr>"+
-    (rows.length?rows.map(r=>`<tr><td class="nm">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join("")
+    (rows.length?rows.map(r=>{
+      const nm=(ROCK_BASE&&r[5])?`<a href="${ROCK_BASE}/Person/${r[5]}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">${r[0]}</a>`:r[0];
+      return `<tr><td class="nm">${nm}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`;
+    }).join("")
       :`<tr><td colspan="5" style="color:var(--muted);font-style:italic">No students in this step for the current filters.</td></tr>`);
   box.appendChild(t);return box;
 }
@@ -595,9 +604,10 @@ function renderStudent(){
   const c1=el("div");c1.innerHTML=`<div class="panel-t">New-student funnel (1st → connected)</div><div class="panel-s">Step = distinct student-group check-ins, capped at 4+. Click a bar.</div>`;
   c1.appendChild(funnelChart(fun.steps,(k)=>{state.step=k;renderStudent();}));
   g1.appendChild(c1);
-  const stepName=fun.steps[state.step-1].s, stepCount=fun.steps[state.step-1].v;
-  const c2=el("div");c2.innerHTML=`<div class="panel-t">Students at ${stepName} (${stepCount})</div><div class="panel-s">Reached this step. Name → opens Rock profile (when wired).</div>`;
-  c2.appendChild(detailTable(detailRows(fun.rows,state.step)));
+  const det=detailRows(fun.rows,state.step);
+  const bucketName={1:"Came once, no return",2:"Came twice, then stopped",3:"Came 3 times, then stopped",4:"Connected (4+ check-ins)"}[state.step];
+  const c2=el("div");c2.innerHTML=`<div class="panel-t">${bucketName} (${det.length})</div><div class="panel-s">The distinct group for the step you clicked. Name opens the Rock profile.</div>`;
+  c2.appendChild(detailTable(det));
   g1.appendChild(c2);root.appendChild(g1);
 
   // 2 attendance
@@ -605,7 +615,7 @@ function renderStudent(){
     "Average over the selected range. Student check-ins ÷ total campus attendance."));
   const g2=el("div","grid2");
   const a1=el("div");a1.innerHTML=`<div class="panel-t">Student avg as % of total attendance, by campus</div><div class="panel-s">Date range sets the window; campus/area filters apply.</div>`;
-  a1.appendChild(rankedBars(att.per,true,att.church,GOAL.attendance,"goal 8%",v=>v.toFixed(1)+"%"));
+  a1.appendChild(rankedBars(att.per,true,att.church,GOAL.attendance,"goal 8%",v=>v.toFixed(1)+"%",att.ann));
   g2.appendChild(a1);
   const tr=attendanceTrend();
   const a2=el("div");a2.innerHTML=`<div class="panel-t">Church-wide trend (weekly)</div><div class="panel-s">Current: ${att.church.toFixed(1)}% of total attendance</div>`+
@@ -621,7 +631,7 @@ function renderStudent(){
   g34.appendChild(b);
   const s=el("div");s.innerHTML=`<div class="section" style="margin-top:22px"><span class="snum">4</span><span class="stitle">STUDENTS SERVING</span><hr><div class="take">${Math.round(serv.church)}% of attending students serve (avg week).</div></div>
     <div class="panel-t" style="margin-top:12px">Students serving, % of students attending</div>`;
-  s.appendChild(rankedBars(serv.per,true,serv.church,GOAL.serving,"goal 50%",v=>Math.round(v)+"%"));
+  s.appendChild(rankedBars(serv.per,true,serv.church,GOAL.serving,"goal 50%",v=>Math.round(v)+"%",serv.ann));
   g34.appendChild(s);root.appendChild(g34);
 }
 
@@ -823,7 +833,7 @@ async function loadLive(){
     else{const out=[];let matched=0;f.rows.forEach(r=>{const ci=campusIndex(r.get(["CampusName","Campus"]));
       const fd=parseDate(r.get(["FirstCheckinDate","FirstDate"]));const ld=parseDate(r.get(["LastVisitDate","LastDate"]))||fd;
       const cc=parseFloat(r.get(["CheckinCount","Checkins"]));const days=parseFloat(r.get(["DaysSince","Days"]));
-      if(ci>=0&&fd){out.push({ci,name:String(r.get(["StudentName","Name"])||"Student"),grade:parseFloat(r.get(["Grade"]))||0,
+      if(ci>=0&&fd){out.push({ci,pid:String(r.get(["PersonId","PersonID"])||""),name:String(r.get(["StudentName","Name"])||"Student"),grade:parseFloat(r.get(["Grade"]))||0,
         firstDate:fd,checkins:isFinite(cc)?Math.min(4,cc):1,lastDate:ld,days:isFinite(days)?days:Math.round((Date.now()-ld)/86400000)});matched++;}});
       if(matched)RAW.funnel=out;dbg.push({sheet:FEED_MAP.funnel.sheet,rows:f.rows.length,matched,cols:f.colNames});}
   }catch(e){dbg.push({sheet:FEED_MAP.funnel.sheet,err:e.message});}
