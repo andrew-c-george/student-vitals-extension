@@ -783,11 +783,17 @@ const norm=s=>String(s==null?"":s).toLowerCase().replace(/[^a-z0-9]/g,"");
 const CAMPUS_IDX={};FULL.forEach((f,i)=>CAMPUS_IDX[norm(f)]=i);SHORT.forEach((s,i)=>CAMPUS_IDX[norm(s)]=i);
 function campusIndex(raw){const n=norm(raw);if(n in CAMPUS_IDX)return CAMPUS_IDX[n];for(const k in CAMPUS_IDX){if(n&&(n.startsWith(k)||k.startsWith(n)))return CAMPUS_IDX[k];}return -1;}
 function findSheet(name){const ws=tableau.extensions.dashboardContent.dashboard.worksheets;return ws.find(w=>w.name===name)||ws.find(w=>norm(w.name)===norm(name))||null;}
+const cleanField=s=>String(s==null?"":s).replace(/^[A-Za-z]+\s*\((.*)\)\s*$/,"$1");  // strip SUM(...)/AGG(...) wrapper
 async function readSheet(name){
   const ws=findSheet(name); if(!ws) return {err:"sheet not on this dashboard",rows:[],cols:[]};
   const dt=await ws.getSummaryDataAsync({maxRows:50000});
-  const cols=dt.columns.map(c=>({name:c.fieldName,type:c.dataType,idx:c.index!=null?c.index:dt.columns.indexOf(c)}));
-  const get=(r,names)=>{for(const nm of names){const c=cols.find(c=>norm(c.name)===norm(nm)||norm(c.name).includes(norm(nm)));if(c)return r[c.idx].value!=null?r[c.idx].value:r[c.idx].formattedValue;}return undefined;};
+  const cols=dt.columns.map(c=>({name:c.fieldName,cn:cleanField(c.fieldName),type:c.dataType,idx:c.index!=null?c.index:dt.columns.indexOf(c)}));
+  const val=(r,c)=>r[c.idx].value!=null?r[c.idx].value:r[c.idx].formattedValue;
+  const get=(r,names)=>{
+    for(const nm of names){const c=cols.find(c=>norm(c.cn)===norm(nm));if(c)return val(r,c);}   // exact (unwrapped) first
+    for(const nm of names){const c=cols.find(c=>norm(c.cn).includes(norm(nm)));if(c)return val(r,c);}  // then contains
+    return undefined;
+  };
   const rows=dt.data.map(r=>({_r:r,get:(names)=>get(r,names)}));
   return {rows,cols,colNames:cols.map(c=>c.name+":"+c.type).join(", ")};
 }
